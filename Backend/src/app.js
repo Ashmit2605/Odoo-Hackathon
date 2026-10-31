@@ -1,32 +1,50 @@
-import "dotenv/config";
-import cors from "cors";
-import express from "express";
-import helmet from "helmet";
-import healthRouter from "./routes/health.routes.js";
-import authRouter from "./routes/auth.routes.js";
-import resourcesRouter from "./routes/resources.routes.js";
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import healthRouter from './routes/health.routes.js';
+import authRouter from './routes/auth.routes.js';
+import resourcesRouter from './routes/resources.routes.js';
+import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || false }));
-app.use(express.json());
+app.use(cors({
+  origin: process.env.CLIENT_URL?.split(',') ?? true,
+  credentials: true,
+}));
+app.use(express.json({ limit: '1mb' }));
 
-app.use("/api/health", healthRouter);
-app.use("/api/auth", authRouter);
-app.use("/api", resourcesRouter);
+// Health check — both root and /api/health (harmless, keeps both)
+app.get('/health', (_req, res) => res.json({ ok: true }));
+app.use('/api/health', healthRouter);
 
-app.use((error, _request, response, _next) => {
-  if (error instanceof SyntaxError && "body" in error) {
-    return response.status(400).json({ error: "Invalid JSON body" });
+// Auth endpoints
+app.use('/api/auth', authRouter);
+
+// Resources (teammate's dashboard routes)
+app.use('/api', resourcesRouter);
+
+// Postgres + JSON error handling (from teammate)
+// Falls through to errorHandler via next(error) for anything else (ZodError, HttpError)
+app.use((error, _req, res, next) => {
+  if (error instanceof SyntaxError && 'body' in error) {
+    return res.status(400).json({ error: 'Invalid JSON body' });
   }
-  if (["23502", "22P02", "22001", "22003", "22007", "22008", "23514"].includes(error.code)) {
-    return response.status(400).json({ error: "Request violates a database constraint" });
+  if (['23502', '22P02', '22001', '22003', '22007', '22008', '23514'].includes(error.code)) {
+    return res.status(400).json({ error: 'Request violates a database constraint' });
   }
-  if (error.code === "23505") return response.status(409).json({ error: "A record with these unique values already exists" });
-  if (error.code === "23503") return response.status(409).json({ error: "A referenced record does not exist or is still in use" });
-  console.error(error);
-  return response.status(500).json({ error: "Internal server error" });
+  if (error.code === '23505') {
+    return res.status(409).json({ error: 'A record with these unique values already exists' });
+  }
+  if (error.code === '23503') {
+    return res.status(409).json({ error: 'A referenced record does not exist or is still in use' });
+  }
+  next(error);  // ← delegates to your errorHandler
 });
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;
