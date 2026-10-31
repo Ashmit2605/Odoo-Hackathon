@@ -1,22 +1,114 @@
-import './index.css'
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Navigate} from "react-router-dom";
+import Home from "./pages/Home/Home.jsx";
+import Login from "./pages/auth/Login.jsx";
+import Register from "./pages/auth/Register.jsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
+
+export default function App() {
+
+import AdminDashboard from "./pages/AdminDash/Admindash.jsx";
+import StaffDashboard from "./pages/StaffDash/Staffdash.jsx";
+import CustomerDashboard from "./pages/CustomerDash/Customerdash.jsx";
+const DashboardSection = ({ role }) => <div style={{ padding: 32 }}>{role} dashboard</div>;
+
+// Admin pages
+const AdminDash = () => <div style={{ padding: 32 }}>Admin Dashboard</div>;
+import Customers from "./pages/customers/Customers.jsx";
+import CustomerDetails from "./pages/customers/CustomerDetails.jsx";
+import Quotations from "./pages/quotations/Quotations.jsx";
+import AddQuotation from "./pages/quotations/AddQuotation.jsx";
+import Subscriptions from "./pages/subscriptions/Subscriptions.jsx";
+import SubscriptionDetails from "./pages/subscriptions/SubscriptionDetails.jsx";
+import Invoices from "./pages/invoices/Invoices.jsx";
+import InvoiceDetails from "./pages/invoices/InvoiceDetails.jsx";
+import Payments from "./pages/payments/Payments.jsx";
+import Products from "./pages/products/Products.jsx";
+import AddProduct from "./pages/products/AddProduct.jsx";
+import Plans from "./pages/plans/Plans.jsx";
+import AddPlan from "./pages/plans/AddPlan.jsx";
+
+// Auth pages
+import Login from "./pages/auth/Login.jsx";
+import Register from "./pages/auth/Register.jsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-10 rounded-2xl shadow-xl text-center">
-        <h1 className="text-4xl font-bold text-green-600">
-          Tailwind CSS Working!
-        </h1>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+      </Routes>
+    </BrowserRouter>
+  );
+    <BrowserRouter>
+      <Routes>
+        {/* Auth */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        <p className="text-gray-600 mt-4">
-          React + Vite + Tailwind CSS
-        </p>
+        {/* Admin */}
+        <Route path="/admin" element={<AdminDashboard />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDash />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="customers/:id" element={<CustomerDetails />} />
+          <Route path="quotations" element={<Quotations />} />
+          <Route path="quotations/new" element={<AddQuotation />} />
+          <Route path="subscriptions" element={<Subscriptions />} />
+          <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
+          <Route path="invoices" element={<Invoices />} />
+          <Route path="invoices/:id" element={<InvoiceDetails />} />
+          <Route path="payments" element={<Payments />} />
+          <Route path="products" element={<Products />} />
+          <Route path="products/new" element={<AddProduct />} />
+          <Route path="plans" element={<Plans />} />
+          <Route path="plans/new" element={<AddPlan />} />
+          <Route path="*" element={<DashboardSection role="admin" />} />
+        </Route>
 
-        <button className="mt-6 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
-          Get Started
-        </button>
-      </div>
-    </div>
-  )
+        {/* Staff */}
+        <Route path="/staff" element={<StaffDashboard />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardSection role="staff" />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="customers/:id" element={<CustomerDetails />} />
+          <Route path="quotations" element={<Quotations />} />
+          <Route path="subscriptions" element={<Subscriptions />} />
+          <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
+          <Route path="invoices" element={<Invoices />} />
+          <Route path="invoices/:id" element={<InvoiceDetails />} />
+          <Route path="payments" element={<Payments />} />
+          <Route path="products" element={<Products />} />
+          <Route path="plans" element={<Plans />} />
+          <Route path="*" element={<DashboardSection role="staff" />} />
+        </Route>
+
+        {/* Customer */}
+        <Route path="/customer" element={<CustomerDashboard />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardSection role="customer" />} />
+          <Route path="quotations" element={<Quotations />} />
+          <Route path="subscriptions" element={<Subscriptions />} />
+          <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
+          <Route path="invoices" element={<Invoices />} />
+          <Route path="invoices/:id" element={<InvoiceDetails />} />
+          <Route path="payments" element={<Payments />} />
+          <Route path="plans" element={<Plans />} />
+          <Route path="*" element={<DashboardSection role="customer" />} />
+        </Route>
+
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
+<<<<<<< HEAD
 
-export default App
+export default App;
