@@ -36,7 +36,6 @@ export default function Login() {
   };
 
   const handleSubmit = async (e) => {
-  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -65,7 +64,7 @@ export default function Login() {
       setLoading(true);
 
       const response = await fetch(
-        `${API_URL.replace(/\/+$/, "")}/auth/login`,
+        `${API_URL.replace(/\/+$/, "")}/api/auth/login`,
         {
           method: "POST",
           headers: {

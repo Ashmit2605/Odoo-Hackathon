@@ -15,7 +15,7 @@ import {
   ghostBtn,
   inputClass,
   primaryBtn,
-} from "../../components/staff/ui";
+} from "./ui.jsx";
 
 const emptyForm = { name: "", email: "", phone: "", address: "" };
 

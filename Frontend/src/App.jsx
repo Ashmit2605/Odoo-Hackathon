@@ -17,18 +17,7 @@ import AdminDashboard from "./pages/AdminDash/Admindash.jsx";
 import StaffDashboard from "./pages/StaffDash/Staffdash.jsx";
 import CustomerDashboard from "./pages/CustomerDash/Customerdash.jsx";
 
-// ==================== AUTH ====================
-import Login from "./pages/auth/Login.jsx";
-import Register from "./pages/auth/Register.jsx";
-import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
-
 // ==================== ADMIN / SHARED PAGES ====================
-// Keep customer imports commented as requested.
-// import Customers from "./pages/customers/Customers.jsx";
-// import CustomerDetails from "./pages/customers/CustomerDetails.jsx";
-
-import Customers from "./pages/customers/Customers.jsx";
-import CustomerDetails from "./pages/customers/CustomerDetails.jsx";
 import Quotations from "./pages/quotations/Quotations.jsx";
 import AddQuotation from "./pages/quotations/AddQuotation.jsx";
 
@@ -63,6 +52,7 @@ import AdminProfile from "./components/AdminDashboard/AdminProfile.jsx";
 import AdminOverview from "./components/AdminDashboard/AdminOverview.jsx";
 import StaffProfile from "./components/StaffDashboard/StaffProfile.jsx";
 import StaffOverview from "./components/StaffDashboard/StaffOverview.jsx";
+import StaffCustomers from "./components/StaffDashboard/StaffCustomers.jsx";
 import CustomerProfile from "./components/CustomerDashboard/CustomerProfile.jsx";
 
 // ==================== CUSTOMER PAGES ====================
@@ -76,81 +66,27 @@ import PaymentHistory from "./components/CustomerDashboard/PaymentHistory.jsx";
 import RequestQuotation from "./pages/customer/quotations/RequestQuotation.jsx";
 import CustomerQuotationDetails from "./pages/customer/quotations/CustomerQuotationDetails.jsx";
 
-// ==================== DASHBOARD PLACEHOLDER ====================
-const DashboardSection = ({ role }) => (
-  <div style={{ padding: 32 }}>
-    <h1>{role} Dashboard</h1>
-    <p>Welcome to your dashboard.</p>
-  <div className="p-8">
-    <h1 className="text-2xl font-semibold">{role} dashboard</h1>
-    <p className="mt-2 text-stone-500">Welcome to your dashboard.</p>
-  </div>
-);
-
+// ==================== ROLE-BASED ROUTE PROTECTION ====================
 function ProtectedRoute({ allowedRoles }) {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-  const user = (() => {
-    try {
-      return JSON.parse(
-      localStorage.getItem("user") || sessionStorage.getItem("user") || "null"
-      );
-    } catch {
-      return null;
-    }
-  })();
-
-  if (!token || !user) return <Navigate to="/login" replace />;
-  if (!allowedRoles.includes(user.role)) {
-    const roleRoutes = {
-      ADMIN: "/admin/dashboard",
-      STAFF: "/staff/dashboard",
-      CUSTOMER: "/customer/dashboard",
-    };
-    return <Navigate to={roleRoutes[user.role] || "/login"} replace />;
-  }
-
-  return <Outlet />;
-}
-
-// ==================== ROLE-BASED ROUTE PROTECTION ====================
-function ProtectedRoute({ allowedRoles = [] }) {
-  const token =
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("token");
-
-  const storedUser =
-    localStorage.getItem("user") ||
-    sessionStorage.getItem("user");
-
-  let user = null;
-
+  const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+  let user;
   try {
     user = storedUser ? JSON.parse(storedUser) : null;
   } catch {
-    user = null;
+    user = undefined;
   }
 
-  if (!token || !user) {
-    return <Navigate to="/login" replace />;
-  }
-
+  if (!token || !user) return <Navigate to="/login" replace />;
   const userRole = user.role?.toUpperCase();
-
   if (!allowedRoles.includes(userRole)) {
     const roleRoutes = {
       ADMIN: "/admin/dashboard",
       STAFF: "/staff/dashboard",
       CUSTOMER: "/customer/dashboard",
     };
-
-    return (
-      <Navigate
-        to={roleRoutes[userRole] || "/login"}
-        replace
-      />
-    );
+    return <Navigate to={roleRoutes[userRole] || "/login"} replace />;
   }
-
   return <Outlet />;
 }
 
@@ -159,115 +95,23 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-
         {/* ==================== PUBLIC ROUTES ==================== */}
         <Route path="/" element={<Home />} />
-
-        <Route path="/login" element={<Login />} />
-
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/signup" element={<Navigate to="/register" replace />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        <Route
-          path="/signup"
-          element={<Navigate to="/register" replace />}
-        />
-
-        <Route
-          path="/forgot-password"
-          element={<ForgotPassword />}
-        />
-
         {/* ==================== ADMIN ROUTES ==================== */}
-        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-          <Route path="/admin" element={<AdminDashboard />}>
-
-            <Route
-              index
-              element={<Navigate to="dashboard" replace />}
-            />
-
-            <Route
-              path="dashboard"
-              element={<DashboardSection role="Admin" />}
-            />
-
-            {/* Customer routes intentionally remain commented. */}
-            {/* <Route path="customers" element={<Customers />} />
-            <Route path="customers/:id" element={<CustomerDetails />} /> */}
-
-            {/* Quotations */}
-            <Route path="quotations" element={<AdminQuotations />} />
-            <Route
-              path="quotations/new"
-              element={<AddQuotation />}
-            />
-            <Route
-              path="quotations/:id"
-              element={<AdminQuotationDetails />}
-            />
-
-            <Route
-              path="quotation-templates"
-              element={<QuotationTemplates />}
-            />
-
-            {/* Subscriptions */}
-            <Route path="subscriptions" element={<Subscriptions />} />
-            <Route
-              path="subscriptions/:id"
-              element={<SubscriptionDetails />}
-            />
-
-            {/* Invoices */}
-            <Route path="invoices" element={<Invoices />} />
-            <Route
-              path="invoices/:id"
-              element={<InvoiceDetails />}
-            />
-
-            {/* Payments */}
-            <Route path="payments" element={<Payments />} />
-
-            {/* Products */}
-            <Route path="products" element={<Products />} />
-            <Route path="products/new" element={<AddProduct />} />
-
-            {/* Plans */}
-            <Route path="plans" element={<Plans />} />
-            <Route path="plans/new" element={<AddPlan />} />
-
-            {/* Other Admin Pages */}
-            <Route path="discounts" element={<Discounts />} />
-            <Route path="taxes" element={<Taxes />} />
-            <Route path="reports" element={<AdminReports />} />
-            <Route path="audit-logs" element={<AuditLog />} />
-            <Route
-              path="users"
-              element={<UserManagement />}
-            />
-
-            {/* Profile and Settings */}
-            <Route path="profile" element={<AdminProfile />} />
-            <Route path="settings" element={<Settings />} />
-
-            <Route
-              path="*"
-              element={<Navigate to="/admin/dashboard" replace />}
-            />
-
-          </Route>
         <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
           <Route path="/admin" element={<AdminDashboard />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminOverview />} />
-            <Route path="profile" element={<AdminProfile />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="customers/:id" element={<CustomerDetails />} />
-            <Route path="quotations" element={<Quotations />} />
+            <Route path="customers" element={<StaffCustomers />} />
+            <Route path="quotations" element={<AdminQuotations />} />
             <Route path="quotations/new" element={<AddQuotation />} />
+            <Route path="quotations/:id" element={<AdminQuotationDetails />} />
+            <Route path="quotation-templates" element={<QuotationTemplates />} />
             <Route path="subscriptions" element={<Subscriptions />} />
             <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
             <Route path="invoices" element={<Invoices />} />
@@ -277,82 +121,25 @@ export default function App() {
             <Route path="products/new" element={<AddProduct />} />
             <Route path="plans" element={<Plans />} />
             <Route path="plans/new" element={<AddPlan />} />
-            <Route path="templates" element={<QuotationTemplates />} />
             <Route path="discounts" element={<Discounts />} />
             <Route path="taxes" element={<Taxes />} />
             <Route path="reports" element={<AdminReports />} />
-            <Route path="audit-log" element={<AuditLog />} />
+            <Route path="audit-logs" element={<AuditLog />} />
             <Route path="users" element={<UserManagement />} />
+            <Route path="profile" element={<AdminProfile />} />
             <Route path="settings" element={<Settings />} />
-            <Route path="*" element={<DashboardSection role="Admin" />} />
+            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
         </Route>
 
         {/* ==================== STAFF ROUTES ==================== */}
         <Route element={<ProtectedRoute allowedRoles={["STAFF"]} />}>
           <Route path="/staff" element={<StaffDashboard />}>
-
-            <Route
-              index
-              element={<Navigate to="dashboard" replace />}
-            />
-
-            <Route
-              path="dashboard"
-              element={<DashboardSection role="Staff" />}
-            />
-
-            {/* Customer routes intentionally remain commented. */}
-            {/* <Route path="customers" element={<Customers />} />
-            <Route path="customers/:id" element={<CustomerDetails />} /> */}
-
-            <Route path="quotations" element={<Quotations />} />
-
-            <Route
-              path="quotations/:id"
-              element={<AdminQuotationDetails />}
-            />
-
-            <Route path="subscriptions" element={<Subscriptions />} />
-
-            <Route
-              path="subscriptions/:id"
-              element={<SubscriptionDetails />}
-            />
-
-            <Route path="invoices" element={<Invoices />} />
-
-            <Route
-              path="invoices/:id"
-              element={<InvoiceDetails />}
-            />
-
-            <Route path="payments" element={<Payments />} />
-
-            <Route path="overdue" element={<OverdueInvoices />} />
-
-            <Route path="products" element={<ProductCatalog />} />
-
-            <Route path="plans" element={<Plans />} />
-
-            <Route path="reports" element={<StaffReports />} />
-
-            <Route path="profile" element={<StaffProfile />} />
-
-            <Route path="settings" element={<Settings />} />
-
-            <Route
-              path="*"
-              element={<Navigate to="/staff/dashboard" replace />}
-            />
-
-          </Route>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<StaffOverview />} />
-            <Route path="profile" element={<StaffProfile />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="customers/:id" element={<CustomerDetails />} />
+            <Route path="customers" element={<StaffCustomers />} />
             <Route path="quotations" element={<Quotations />} />
+            <Route path="quotations/:id" element={<AdminQuotationDetails />} />
             <Route path="subscriptions" element={<Subscriptions />} />
             <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
             <Route path="invoices" element={<Invoices />} />
@@ -362,94 +149,15 @@ export default function App() {
             <Route path="products" element={<ProductCatalog />} />
             <Route path="plans" element={<Plans />} />
             <Route path="reports" element={<StaffReports />} />
+            <Route path="profile" element={<StaffProfile />} />
             <Route path="settings" element={<Settings />} />
-            <Route path="*" element={<DashboardSection role="Staff" />} />
+            <Route path="*" element={<Navigate to="/staff/dashboard" replace />} />
           </Route>
         </Route>
 
         {/* ==================== CUSTOMER ROUTES ==================== */}
         <Route element={<ProtectedRoute allowedRoles={["CUSTOMER"]} />}>
           <Route path="/customer" element={<CustomerDashboard />}>
-
-            <Route
-              index
-              element={<Navigate to="dashboard" replace />}
-            />
-
-            {/* Customer Overview */}
-            <Route
-              path="dashboard"
-              element={<CustomerOverview />}
-            />
-
-            {/* Customer Profile */}
-            <Route
-              path="profile"
-              element={<CustomerProfile />}
-            />
-
-            {/* Product Catalog */}
-            <Route
-              path="products"
-              element={<ProductCatalog />}
-            />
-
-            {/* My Subscriptions */}
-            <Route
-              path="subscriptions"
-              element={<MySubscriptions />}
-            />
-
-            <Route
-              path="subscriptions/:id"
-              element={<SubscriptionDetails />}
-            />
-
-            {/* My Quotations */}
-            <Route
-              path="quotations"
-              element={<MyQuotations />}
-            />
-
-            <Route
-              path="quotations/new"
-              element={<RequestQuotation />}
-            />
-
-            <Route
-              path="quotations/:id"
-              element={<CustomerQuotationDetails />}
-            />
-
-            {/* My Invoices */}
-            <Route
-              path="invoices"
-              element={<MyInvoices />}
-            />
-
-            <Route
-              path="invoices/:id"
-              element={<InvoiceDetails />}
-            />
-
-            {/* Payment History */}
-            <Route
-              path="payments"
-              element={<PaymentHistory />}
-            />
-
-            {/* Settings */}
-            <Route
-              path="settings"
-              element={<Settings />}
-            />
-
-            <Route
-              path="*"
-              element={<Navigate to="/customer/dashboard" replace />}
-            />
-
-          </Route>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<CustomerOverview />} />
             <Route path="profile" element={<CustomerProfile />} />
@@ -458,6 +166,8 @@ export default function App() {
             <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
             <Route path="plans" element={<AvailablePlans />} />
             <Route path="quotations" element={<MyQuotations />} />
+            <Route path="quotations/new" element={<RequestQuotation />} />
+            <Route path="quotations/:id" element={<CustomerQuotationDetails />} />
             <Route path="invoices" element={<MyInvoices />} />
             <Route path="invoices/:id" element={<InvoiceDetails />} />
             <Route path="payments" element={<PaymentHistory />} />
@@ -467,11 +177,6 @@ export default function App() {
         </Route>
 
         {/* ==================== FALLBACK ==================== */}
-        <Route
-          path="*"
-          element={<Navigate to="/login" replace />}
-        />
-
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
