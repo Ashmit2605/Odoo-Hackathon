@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect, useCallback } from "react";
 import { Plus, X, Eye, Pencil, Trash2, ChevronDown, ChevronUp, Tag, Percent, Package, DollarSign, AlertCircle, Loader2 } from "lucide-react";
 import { productService } from "../../services/productService";
@@ -647,4 +648,19 @@ export default function Products() {
       )}
     </div>
   );
+=======
+import ResourcePage from "../../components/ResourcePage.jsx";
+import { getProducts } from "../../services/productService.js";
+
+const columns = [
+  { key: "id", label: "ID" },
+  { key: "name", label: "Product" },
+  { key: "productType", label: "Type" },
+  { key: "salesPrice", label: "Sales price" },
+  { key: "taxPercentage", label: "Tax %" },
+];
+
+export default function Products() {
+  return <ResourcePage title="Products" load={getProducts} columns={columns} />;
+>>>>>>> 315d366 (done)
 }

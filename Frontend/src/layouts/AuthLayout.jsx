@@ -1,3 +1,9 @@
+import { Outlet } from "react-router-dom";
+
 export default function AuthLayout() {
-  return null
+  return (
+    <main className="min-h-screen bg-[#FAF7F0]">
+      <Outlet />
+    </main>
+  );
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
 import { Search, CreditCard } from "lucide-react";
 import { invoiceService } from "../../services/invoiceService";
@@ -88,5 +89,51 @@ export default function Payments() {
         </div>
       </div>
     </section>
+=======
+import { useEffect, useState } from "react";
+import ResourcePage from "../../components/ResourcePage.jsx";
+import { getInvoices, getPayments, createPayment } from "../../services/invoiceService.js";
+import useAuth from "../../hooks/useAuth.js";
+
+export default function Payments() {
+  const { user } = useAuth();
+  const [invoices, setInvoices] = useState([]);
+  const [lookupError, setLookupError] = useState("");
+
+  useEffect(() => {
+    getInvoices()
+      .then(setInvoices)
+      .catch((requestError) => {
+        setLookupError(
+          requestError.response?.data?.message || "Unable to load invoices.",
+        );
+      });
+  }, []);
+
+  return (
+    <>
+      {lookupError && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-red-700">{lookupError}</p>}
+      <ResourcePage
+        title="Payments"
+        load={getPayments}
+        create={user?.role === "ADMIN" ? createPayment : undefined}
+        columns={[
+          { key: "id", label: "ID" },
+          { key: "invoiceNumber", label: "Invoice" },
+          { key: "customerName", label: "Customer" },
+          { key: "method", label: "Method" },
+          { key: "amount", label: "Amount" },
+          { key: "paymentDate", label: "Date" },
+        ]}
+        fields={user?.role === "ADMIN" ? [
+          { name: "invoiceId", label: "Invoice", options: invoices.map((invoice) => ({ value: invoice.id, label: `${invoice.invoiceNumber} — ${invoice.customerName}` })) },
+          { name: "amount", label: "Amount", type: "number", step: "0.01" },
+          { name: "method", label: "Method", options: ["CASH", "BANK_TRANSFER", "CARD", "UPI", "OTHER"].map((value) => ({ value, label: value })) },
+          { name: "paymentDate", label: "Payment date", type: "date", required: false },
+          { name: "note", label: "Note", required: false },
+        ] : []}
+      />
+    </>
+>>>>>>> 315d366 (done)
   );
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from "react";
 import { useLocation } from "react-router-dom";
 import AdminQuotations from "../admin/quotations/AdminQuotations.jsx";
@@ -24,4 +25,20 @@ export default function Quotations() {
   }
 
   return <CustomerQuotations />;
+=======
+import ResourcePage from "../../components/ResourcePage.jsx";
+import { getQuotations } from "../../services/subscriptionService.js";
+
+const columns = [
+  { key: "id", label: "ID" },
+  { key: "subscriptionNumber", label: "Quotation" },
+  { key: "customerName", label: "Customer" },
+  { key: "planName", label: "Plan" },
+  { key: "startDate", label: "Start date" },
+  { key: "status", label: "Status" },
+];
+
+export default function Quotations() {
+  return <ResourcePage title="Quotations" load={getQuotations} columns={columns} detailPath={(id) => `/subscriptions/${id}`} />;
+>>>>>>> 315d366 (done)
 }

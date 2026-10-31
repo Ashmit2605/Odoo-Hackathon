@@ -1,3 +1,15 @@
-const api = {}
+import axios from "axios";
 
-export default api
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
+});
+
+api.interceptors.request.use((config) => {
+  const token =
+    localStorage.getItem("brightloop_token") ||
+    sessionStorage.getItem("brightloop_token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+export default api;

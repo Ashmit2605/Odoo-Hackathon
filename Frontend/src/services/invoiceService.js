@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:5000'}/api/invoices`;
 
 const headers = () => {
@@ -35,3 +36,22 @@ export const invoiceService = {
   listAll: () => fetch(BASE, { headers: headers() }).then(handle),
   listAllPayments: () => fetch(`${BASE}/payments`, { headers: headers() }).then(handle),
 };
+=======
+import api from "./api.js";
+
+export const getInvoices = async () => (await api.get("/api/invoices")).data;
+export const getInvoice = async (id) => (await api.get(`/api/invoices/${id}`)).data;
+export const createInvoice = async (invoice) => (await api.post("/api/invoices", invoice)).data;
+export const getPayments = async () => (await api.get("/api/payments")).data;
+export const createPayment = async (payment) =>
+  (await api.post(`/api/admin/invoices/${payment.invoiceId}/payments`, payment)).data;
+export const payInvoice = async (invoiceId, payment) =>
+  (await api.post(`/api/invoices/${invoiceId}/payments`, payment)).data;
+export const createCheckout = async (invoiceId) =>
+  (await api.post(`/api/customer/invoices/${invoiceId}/checkout`)).data;
+export const completeTestCheckout = async (paymentId) =>
+  (await api.post(`/api/customer/payments/${paymentId}/complete-test`)).data;
+export const recordManualPayment = async (invoiceId, payment) =>
+  (await api.post(`/api/admin/invoices/${invoiceId}/payments`, payment)).data;
+export const getDashboard = async () => (await api.get("/api/dashboard")).data;
+>>>>>>> 315d366 (done)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL || "http://localhost:5000"
 ).replace(/\/+$/, "");
@@ -45,3 +46,10 @@ export async function getCustomer(id, role = "STAFF") {
     : await request(`/api/staff/customers/${encodeURIComponent(id)}`);
   return result.data ?? result;
 }
+=======
+import api from "./api.js";
+
+export const getCustomers = async () => (await api.get("/api/customers")).data;
+export const getCustomer = async (id) => (await api.get(`/api/customers/${id}`)).data;
+export const createCustomer = async (customer) => (await api.post("/api/customers", customer)).data;
+>>>>>>> 315d366 (done)

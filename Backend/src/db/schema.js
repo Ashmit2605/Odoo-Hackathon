@@ -8,6 +8,7 @@ import { sql } from 'drizzle-orm';
 // ─────────────────────────── ENUMS ───────────────────────────
 export const userRole           = pgEnum('user_role', ['ADMIN', 'STAFF', 'CUSTOMER']);
 export const billingFrequency   = pgEnum('billing_frequency', ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']);
+<<<<<<< HEAD
 export const subscriptionStatus = pgEnum('subscription_status', [
   'DRAFT',
   'QUOTATION',
@@ -22,9 +23,15 @@ export const subscriptionStatus = pgEnum('subscription_status', [
   'EXPIRED',
 ]);
 export const invoiceStatus      = pgEnum('invoice_status', ['DRAFT', 'CONFIRMED', 'PAID', 'CANCELLED']);
+=======
+export const subscriptionStatus = pgEnum('subscription_status', ['DRAFT', 'QUOTATION', 'CONFIRMED', 'PENDING_PAYMENT', 'ACTIVE', 'PAST_DUE', 'CANCEL_SCHEDULED', 'EXPIRED', 'CANCELED', 'PAUSED', 'CLOSED']);
+export const subscriptionSource = pgEnum('subscription_source', ['SELF_SERVICE', 'ADMIN']);
+export const invoiceStatus      = pgEnum('invoice_status', ['DRAFT', 'CONFIRMED', 'PARTIALLY_PAID', 'OVERDUE', 'PAID', 'CANCELLED']);
+>>>>>>> 315d366 (done)
 export const discountType       = pgEnum('discount_type', ['FIXED', 'PERCENTAGE']);
 export const discountScope      = pgEnum('discount_scope', ['PRODUCT', 'SUBSCRIPTION']);
 export const paymentMethod      = pgEnum('payment_method', ['CASH', 'BANK_TRANSFER', 'CARD', 'UPI', 'OTHER']);
+export const paymentStatus      = pgEnum('payment_status', ['PENDING', 'SUCCEEDED', 'FAILED', 'REFUNDED']);
 
 // ─────────────────────────── USERS ───────────────────────────
 export const users = pgTable('users', {
@@ -86,8 +93,11 @@ export const productVariants = pgTable('product_variants', {
 export const plans = pgTable('plans', {
   id:              serial('id').primaryKey(),
   name:            varchar('name', { length: 200 }).notNull(),
+  description:     text('description'),
   price:           numeric('price', { precision: 12, scale: 2 }).notNull(),
+  currency:        varchar('currency', { length: 3 }).notNull().default('INR'),
   billingFrequency: billingFrequency('billing_frequency').notNull(),
+  isActive:        boolean('is_active').notNull().default(true),
   minQuantity:     integer('min_quantity').notNull().default(1),
   availableFrom:   date('available_from'),
   availableUntil:  date('available_until'),
@@ -125,9 +135,18 @@ export const subscriptions = pgTable('subscriptions', {
   subscriptionNumber:  varchar('subscription_number', { length: 50 }).notNull().unique(),
   customerId:          integer('customer_id').notNull().references(() => customers.id),
   planId:              integer('plan_id').notNull().references(() => plans.id),
+  source:              subscriptionSource('source').notNull().default('ADMIN'),
+  agreedPrice:         numeric('agreed_price', { precision: 12, scale: 2 }).notNull().default('0'),
+  currency:            varchar('currency', { length: 3 }).notNull().default('INR'),
+  billingFrequency:    billingFrequency('billing_frequency').notNull().default('MONTHLY'),
   templateId:          integer('template_id').references(() => quotationTemplates.id, { onDelete: 'set null' }),
+<<<<<<< HEAD
    source:              varchar('source', { length: 20 }).notNull().default('SELF_SERVICE'), 
   startDate:           date('start_date').notNull(),
+=======
+  startDate:           date('start_date').notNull().default(sql`CURRENT_DATE`),
+  currentPeriodEnd:    date('current_period_end'),
+>>>>>>> 315d366 (done)
   expiryDate:          date('expiry_date'),
   nextBillingDate:     date('next_billing_date'),
   paymentTerms:        varchar('payment_terms', { length: 100 }),
@@ -195,6 +214,7 @@ export const invoices = pgTable('invoices', {
   invoiceNumber:  varchar('invoice_number', { length: 50 }).notNull().unique(),
   customerId:     integer('customer_id').notNull().references(() => customers.id),
   subscriptionId: integer('subscription_id').references(() => subscriptions.id),
+  currency:       varchar('currency', { length: 3 }).notNull().default('INR'),
   periodStart:    date('period_start'),
   invoiceDate:    date('invoice_date').notNull().default(sql`CURRENT_DATE`),
   dueDate:        date('due_date'),
@@ -228,14 +248,18 @@ export const payments = pgTable('payments', {
   id:          serial('id').primaryKey(),
   invoiceId:   integer('invoice_id').notNull().references(() => invoices.id),
   method:      paymentMethod('method').notNull(),
+  status:      paymentStatus('status').notNull().default('PENDING'),
+  providerReference: varchar('provider_reference', { length: 200 }).unique(),
   amount:      numeric('amount', { precision: 12, scale: 2 }).notNull(),
   paymentDate: date('payment_date').notNull().default(sql`CURRENT_DATE`),
+  paidAt:      timestamp('paid_at', { withTimezone: true }),
   note:        text('note'),
 }, (t) => [
   check('payments_amount_check', sql`${t.amount} > 0`),
   index('idx_payments_invoice').on(t.invoiceId),
 ]);
 
+<<<<<<< HEAD
 // ─────────────────────────── QUOTATIONS ─────────────────────────
 export const quotationStatus = pgEnum('quotation_status', ['PENDING', 'NEEDS_INFORMATION', 'ACCEPTED', 'REJECTED', 'EXPIRED']);
 export const quotationAction = pgEnum('quotation_action', ['REQUESTED', 'ACCEPTED', 'REJECTED', 'NEEDS_INFORMATION', 'UPDATED', 'PDF_GENERATED', 'CUSTOMER_REPLY']);
@@ -305,4 +329,27 @@ export const quotationMessages = pgTable('quotation_messages', {
   createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   index('idx_quotation_messages_quotation').on(t.quotationId),
+=======
+export const staffAssignments = pgTable('staff_assignments', {
+  staffId: integer('staff_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  customerId: integer('customer_id').notNull().references(() => customers.id, { onDelete: 'cascade' }),
+  assignedBy: integer('assigned_by').references(() => users.id, { onDelete: 'set null' }),
+  assignedAt: timestamp('assigned_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  primaryKey({ columns: [t.staffId, t.customerId] }),
+  index('idx_staff_assignments_customer').on(t.customerId),
+]);
+
+export const auditLogs = pgTable('audit_logs', {
+  id: serial('id').primaryKey(),
+  actorId: integer('actor_id').references(() => users.id, { onDelete: 'set null' }),
+  action: varchar('action', { length: 100 }).notNull(),
+  entityType: varchar('entity_type', { length: 100 }).notNull(),
+  entityId: integer('entity_id'),
+  details: text('details'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('idx_audit_logs_entity').on(t.entityType, t.entityId),
+  index('idx_audit_logs_actor').on(t.actorId),
+>>>>>>> 315d366 (done)
 ]);

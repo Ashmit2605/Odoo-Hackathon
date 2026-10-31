@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -11,6 +12,16 @@ import { errorHandler, notFoundHandler } from './middleware/error.middleware.js'
 import staffRouter from './routes/staff.routes.js';
 import quotationRouter from './routes/quotation.routes.js';
 import adminRouter from './routes/admin.routes.js';
+=======
+import "dotenv/config";
+import cors from "cors";
+import express from "express";
+import helmet from "helmet";
+import authRouter from "./routes/auth.routes.js";
+import apiRouter from "./routes/api.routes.js";
+import healthRouter from "./routes/health.routes.js";
+import { listPublicPlans } from "./controllers/business.controller.js";
+>>>>>>> 315d366 (done)
 
 const app = express();
 
@@ -26,6 +37,7 @@ const allowedClientOrigins = [
 ];
 
 app.use(helmet());
+<<<<<<< HEAD
 app.use(cors({
   origin: allowedClientOrigins.length > 0 ? allowedClientOrigins : true,
   credentials: true,
@@ -35,6 +47,19 @@ app.use(express.json({ limit: '1mb' }));
 // Health check — both root and /api/health (harmless, keeps both)
 app.get('/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/health', healthRouter);
+=======
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+  }),
+);
+app.use(express.json());
+
+app.use("/api/health", healthRouter);
+app.get("/api/public/plans", listPublicPlans);
+app.use("/api/auth", authRouter);
+app.use("/api", apiRouter);
+>>>>>>> 315d366 (done)
 
 // Auth endpoints
 app.use('/api/auth', authRouter);

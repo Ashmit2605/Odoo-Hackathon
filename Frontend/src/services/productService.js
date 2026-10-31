@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const BASE = `${import.meta.env.VITE_API_URL ?? "http://localhost:5000"}/api/products`;
 
 const getToken = () =>
@@ -55,3 +56,10 @@ export const productService = {
       headers: headers(),
     }).then(handle),
 };
+=======
+import api from "./api.js";
+
+export const getProducts = async () => (await api.get("/api/products")).data;
+export const getProduct = async (id) => (await api.get(`/api/products/${id}`)).data;
+export const createProduct = async (product) => (await api.post("/api/products", product)).data;
+>>>>>>> 315d366 (done)

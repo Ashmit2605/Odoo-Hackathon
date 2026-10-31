@@ -1,54 +1,82 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Mail, KeyRound, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, KeyRound, Mail } from "lucide-react";
+import {
+  requestPasswordReset,
+  resetPassword,
+} from "../../services/authService.js";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setMessage("Please enter a valid email address.");
-      return;
+  const handleRequest = async (event) => {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+    setIsSubmitting(true);
+    try {
+      const result = await requestPasswordReset(email);
+      setMessage(result.message);
+      setResetToken(result.resetToken || "");
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          "Unable to request a reset code. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-    // TODO: Connect backend password reset API here.
-    setMessage(
-      "Password reset API is not connected yet. No email has been sent."
-    );
+  const handleReset = async (event) => {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+    try {
+      const result = await resetPassword({
+        token: resetToken,
+        password,
+        confirmPassword,
+      });
+      setMessage(result.message);
+      setResetToken("");
+      setPassword("");
+      setConfirmPassword("");
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          "Unable to reset your password. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F0] flex items-center justify-center px-4 py-10">
+    <div className="flex min-h-screen items-center justify-center bg-[#FAF7F0] px-4 py-10">
       <div className="w-full max-w-md">
-        <Link
-          to="/"
-          className="block text-center text-3xl font-bold text-[#5A3E2B] mb-9"
-        >
+        <Link to="/" className="mb-9 block text-center text-3xl font-bold text-[#5A3E2B]">
           Bright<span className="text-[#87A96B]">loop</span>
         </Link>
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 md:p-10">
-          <div className="w-14 h-14 rounded-2xl bg-[#87A96B]/15 flex items-center justify-center mb-7">
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm md:p-10">
+          <div className="mb-7 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#87A96B]/15">
             <KeyRound size={27} className="text-[#87A96B]" />
           </div>
-
-          <h1 className="text-3xl font-bold text-[#5A3E2B]">
-            Forgot password?
-          </h1>
-
-          <p className="text-gray-500 mt-3 mb-8 leading-relaxed">
-            Enter your registered email address to request a password reset link.
+          <h1 className="text-3xl font-bold text-[#5A3E2B]">Forgot password?</h1>
+          <p className="mb-8 mt-3 leading-relaxed text-gray-500">
+            Request a password reset code for your account.
           </p>
 
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="reset-email" className="block text-sm font-semibold text-[#5A3E2B] mb-2">
+          <form onSubmit={handleRequest}>
+            <label htmlFor="reset-email" className="mb-2 block text-sm font-semibold text-[#5A3E2B]">
               Email Address
             </label>
-
             <div className="relative">
               <Mail size={19} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -56,35 +84,68 @@ export default function ForgotPassword() {
                 type="email"
                 required
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setMessage("");
-                }}
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@example.com"
-                className="w-full border border-gray-200 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:border-[#87A96B] focus:ring-2 focus:ring-[#87A96B]/15 transition"
+                className="w-full rounded-xl border border-gray-200 py-3.5 pl-12 pr-4 outline-none focus:border-[#87A96B]"
               />
             </div>
-
-            {message && (
-              <p role="status" className="text-sm text-[#5A3E2B] mt-4">
-                {message}
-              </p>
-            )}
-
             <button
               type="submit"
-              className="w-full bg-[#D5851F] text-white py-3.5 rounded-xl font-semibold flex justify-center items-center gap-2 mt-6 hover:bg-[#BD741A] transition"
+              disabled={isSubmitting}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#D5851F] py-3.5 font-semibold text-white disabled:opacity-60"
             >
-              Request Reset Link <ArrowRight size={19} />
+              {isSubmitting ? "Requesting..." : "Request reset code"}
+              {!isSubmitting && <ArrowRight size={19} />}
             </button>
           </form>
 
-          <Link
-            to="/login"
-            className="flex justify-center items-center gap-2 text-sm font-semibold text-[#87A96B] mt-8 hover:underline"
-          >
-            <ArrowLeft size={17} />
-            Back to Login
+          {message && <p role="status" className="mt-4 break-all text-sm text-green-700">{message}</p>}
+          {error && <p role="alert" className="mt-4 text-sm text-red-600">{error}</p>}
+
+          {resetToken && (
+            <form onSubmit={handleReset} className="mt-6 space-y-4 border-t border-gray-100 pt-6">
+              <label className="block text-sm font-semibold text-[#5A3E2B]">
+                Reset code
+                <input
+                  required
+                  value={resetToken}
+                  onChange={(event) => setResetToken(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 font-normal"
+                />
+              </label>
+              <label className="block text-sm font-semibold text-[#5A3E2B]">
+                New password
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 font-normal"
+                />
+              </label>
+              <label className="block text-sm font-semibold text-[#5A3E2B]">
+                Confirm new password
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 font-normal"
+                />
+              </label>
+              <p className="text-xs text-gray-500">Use at least 8 characters, including uppercase, lowercase, and a special character.</p>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full rounded-xl bg-[#5A3E2B] py-3.5 font-semibold text-white disabled:opacity-60"
+              >
+                {isSubmitting ? "Updating..." : "Update password"}
+              </button>
+            </form>
+          )}
+
+          <Link to="/login" className="mt-8 flex items-center justify-center gap-2 text-sm font-semibold text-[#87A96B] hover:underline">
+            <ArrowLeft size={17} /> Back to Login
           </Link>
         </div>
       </div>

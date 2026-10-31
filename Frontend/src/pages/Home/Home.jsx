@@ -161,7 +161,7 @@ export default function Home() {
 
           <div className="flex flex-wrap gap-4 mt-9">
             <Link
-              to="/signup"
+              to="/browse-plans"
               className="bg-amberglow text-white px-7 py-4 rounded-xl font-semibold flex items-center gap-3 hover:brightness-95 transition"
             >
               Get Started <ArrowRight size={19} />
@@ -320,7 +320,7 @@ export default function Home() {
           </div>
 
           <Link
-            to="/signup"
+            to="/browse-plans"
             className="bg-white text-walnut px-8 py-4 rounded-xl font-bold flex items-center gap-2 shrink-0 hover:bg-cream transition"
           >
             Get Started <ArrowRight size={19} />

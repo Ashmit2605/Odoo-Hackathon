@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import {
   Eye,
   EyeOff,
@@ -8,10 +9,14 @@ import {
   Lock,
   ArrowRight,
 } from "lucide-react";
+=======
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import useAuth from "../../hooks/useAuth.js";
+>>>>>>> 315d366 (done)
 
 export default function Login() {
   const navigate = useNavigate();
-
+  const { signIn } = useAuth();
   const [form, setForm] = useState({
     email: localStorage.getItem("rememberedEmail") || "",
     password: "",
@@ -24,7 +29,11 @@ export default function Login() {
   );
 
   const [error, setError] = useState("");
+<<<<<<< HEAD
   const [loading, setLoading] = useState(false);
+=======
+  const [isSubmitting, setIsSubmitting] = useState(false);
+>>>>>>> 315d366 (done)
 
   const handleChange = (e) => {
     setForm({
@@ -53,6 +62,7 @@ export default function Login() {
       return;
     }
 
+<<<<<<< HEAD
     const API_URL = import.meta.env.VITE_API_URL;
 
     if (!API_URL) {
@@ -169,6 +179,19 @@ export default function Login() {
       }
     } finally {
       setLoading(false);
+=======
+    setIsSubmitting(true);
+    try {
+      await signIn(form, rememberMe);
+      navigate("/dashboard", { replace: true });
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          "Unable to sign in. Please check your connection and try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+>>>>>>> 315d366 (done)
     }
   };
 
@@ -302,6 +325,7 @@ export default function Login() {
             {/* Submit Button */}
             <button
               type="submit"
+<<<<<<< HEAD
               disabled={loading}
               className="w-full bg-[#D5851F] text-white py-3.5 rounded-xl font-semibold flex justify-center items-center gap-2 hover:bg-[#BD741A] transition disabled:opacity-60 disabled:cursor-not-allowed"
             >
@@ -313,6 +337,13 @@ export default function Login() {
                   <ArrowRight size={19} />
                 </>
               )}
+=======
+              disabled={isSubmitting}
+              className="w-full bg-[#D5851F] text-white py-3.5 rounded-xl font-semibold flex justify-center items-center gap-2 hover:bg-[#BD741A] transition"
+            >
+              {isSubmitting ? "Signing in..." : "Sign In"}
+              {!isSubmitting && <ArrowRight size={19} />}
+>>>>>>> 315d366 (done)
             </button>
 
           </form>

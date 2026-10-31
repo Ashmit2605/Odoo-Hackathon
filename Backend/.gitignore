@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 node_modules
+=======
+/drizzle
+*.node_modules
+>>>>>>> 315d366 (done)
 .env
 
 # Logs

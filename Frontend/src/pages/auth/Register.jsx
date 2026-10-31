@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+<<<<<<< HEAD
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { register } from "../../services/authService.js";
@@ -9,6 +10,18 @@ const inputClass =
 
 export default function Register() {
   const navigate = useNavigate();
+=======
+import { Link } from "react-router-dom";
+import {
+  User, Mail, Lock, Eye, EyeOff, ArrowRight
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import useAuth from "../../hooks/useAuth.js";
+
+export default function Register() {
+  const navigate = useNavigate();
+  const { signUp } = useAuth();
+>>>>>>> 315d366 (done)
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -18,17 +31,29 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
+<<<<<<< HEAD
+=======
+  const [success, setSuccess] = useState("");
+>>>>>>> 315d366 (done)
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
     setError("");
+    setSuccess("");
   };
 
+<<<<<<< HEAD
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (isSubmitting) return;
+=======
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+>>>>>>> 315d366 (done)
 
     if (Object.values(form).some((value) => !value.trim())) {
       setError("Please fill in all fields.");
@@ -62,6 +87,7 @@ export default function Register() {
     }
 
     setIsSubmitting(true);
+<<<<<<< HEAD
     setError("");
     try {
       const result = await register({
@@ -81,6 +107,22 @@ export default function Register() {
         requestError instanceof Error
           ? requestError.message
           : "Unable to create your account."
+=======
+    try {
+      await signUp(form);
+      setSuccess("Account created successfully. Redirecting...");
+      setForm({
+        fullName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      navigate("/dashboard", { replace: true });
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          "Unable to create your account. Please try again."
+>>>>>>> 315d366 (done)
       );
     } finally {
       setIsSubmitting(false);
@@ -204,10 +246,20 @@ export default function Register() {
               </p>
             )}
 
+            {success && (
+              <p role="status" className="text-sm text-green-700">
+                {success}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={isSubmitting}
+<<<<<<< HEAD
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#D5851F] py-3.5 font-semibold text-white transition hover:bg-[#BD741A] disabled:cursor-not-allowed disabled:opacity-60"
+=======
+              className="w-full bg-[#D5851F] text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#BD741A] transition"
+>>>>>>> 315d366 (done)
             >
               {isSubmitting ? "Creating account..." : "Create Account"}
               {!isSubmitting && <ArrowRight size={19} />}

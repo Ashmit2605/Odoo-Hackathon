@@ -34,6 +34,12 @@ export default function HomeNavbar() {
 
         <div className="hidden md:flex items-center gap-5">
           <Link
+            to="/browse-plans"
+            className="text-sm font-medium text-walnut hover:text-sage"
+          >
+            Plans
+          </Link>
+          <Link
             to="/login"
             className="text-sm font-medium text-walnut hover:text-sage"
           >
@@ -73,6 +79,9 @@ export default function HomeNavbar() {
 
           <Link to="/login" onClick={() => setOpen(false)}>
             Login
+          </Link>
+          <Link to="/browse-plans" onClick={() => setOpen(false)}>
+            Plans
           </Link>
           <Link
             to="/signup"

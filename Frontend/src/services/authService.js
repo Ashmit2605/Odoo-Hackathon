@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL || "http://localhost:5000"
 ).replace(/\/+$/, "");
@@ -126,3 +127,36 @@ export async function updateProfile(profile) {
 }
 
 export const logout = async () => {};
+=======
+import api from "./api.js";
+
+export const login = async (credentials) => {
+  const response = await api.post("/api/auth/login", credentials);
+  return response.data;
+};
+
+export const register = async (userData) => {
+  const response = await api.post("/api/auth/register", userData);
+  return response.data;
+};
+
+export const getCurrentUser = async () => {
+  const response = await api.get("/api/auth/me");
+  return response.data.user;
+};
+
+export const requestPasswordReset = async (email) =>
+  (await api.post("/api/auth/forgot-password", { email })).data;
+
+export const resetPassword = async (details) =>
+  (await api.post("/api/auth/reset-password", details)).data;
+
+export const logout = async () => {
+  try {
+    await api.post("/api/auth/logout");
+  } finally {
+    localStorage.removeItem("brightloop_token");
+    sessionStorage.removeItem("brightloop_token");
+  }
+};
+>>>>>>> 315d366 (done)

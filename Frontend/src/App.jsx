@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 import {
   BrowserRouter,
   Routes,
@@ -6,12 +7,35 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
+=======
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+>>>>>>> 315d366 (done)
 
 // ==================== LAYOUT / DASHBOARDS ====================
 import Home from "./pages/Home/Home.jsx";
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import DashboardLayout from "./layouts/DashboardLayout.jsx";
+import Dashboard from "./pages/dashboard/Dashboard.jsx";
+import Customers from "./pages/customers/Customers.jsx";
+import CustomerDetails from "./pages/customers/CustomerDetails.jsx";
+import Products from "./pages/products/Products.jsx";
+import AddProduct from "./pages/products/AddProduct.jsx";
+import Plans from "./pages/plans/Plans.jsx";
+import AddPlan from "./pages/plans/AddPlan.jsx";
+import Subscriptions from "./pages/subscriptions/Subscriptions.jsx";
+import SubscriptionDetails from "./pages/subscriptions/SubscriptionDetails.jsx";
+import Quotations from "./pages/quotations/Quotations.jsx";
+import AddQuotation from "./pages/quotations/AddQuotation.jsx";
+import Invoices from "./pages/invoices/Invoices.jsx";
+import InvoiceDetails from "./pages/invoices/InvoiceDetails.jsx";
+import Payments from "./pages/payments/Payments.jsx";
+import AddSubscription from "./pages/subscriptions/AddSubscription.jsx";
+import AddInvoice from "./pages/invoices/AddInvoice.jsx";
+import PlanCatalog from "./pages/plans/PlanCatalog.jsx";
+import AdminTeam from "./pages/dashboard/AdminTeam.jsx";
 
 import AdminDashboard from "./pages/AdminDash/Admindash.jsx";
 import StaffDashboard from "./pages/StaffDash/Staffdash.jsx";
@@ -101,6 +125,7 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/signup" element={<Navigate to="/register" replace />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+<<<<<<< HEAD
 
         {/* ==================== ADMIN ROUTES ==================== */}
         <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
@@ -178,6 +203,35 @@ export default function App() {
 
         {/* ==================== FALLBACK ==================== */}
         <Route path="*" element={<Navigate to="/login" replace />} />
+=======
+        <Route path="/browse-plans" element={<PlanCatalog />} />
+        <Route
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin/team" element={<AdminTeam />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/customers/:id" element={<CustomerDetails />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/products/new" element={<AddProduct />} />
+          <Route path="/plans" element={<Plans />} />
+          <Route path="/plans/new" element={<AddPlan />} />
+          <Route path="/subscriptions" element={<Subscriptions />} />
+          <Route path="/subscriptions/new" element={<AddSubscription />} />
+          <Route path="/subscriptions/:id" element={<SubscriptionDetails />} />
+          <Route path="/quotations" element={<Quotations />} />
+          <Route path="/quotations/new" element={<AddQuotation />} />
+          <Route path="/invoices" element={<Invoices />} />
+          <Route path="/invoices/new" element={<AddInvoice />} />
+          <Route path="/invoices/:id" element={<InvoiceDetails />} />
+          <Route path="/payments" element={<Payments />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Route>
+>>>>>>> 315d366 (done)
       </Routes>
     </BrowserRouter>
   );

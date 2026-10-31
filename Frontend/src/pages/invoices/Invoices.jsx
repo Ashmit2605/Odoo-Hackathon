@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
 import { Search, Receipt, X } from "lucide-react";
 import { invoiceService } from "../../services/invoiceService";
@@ -130,4 +131,21 @@ export default function Invoices() {
       )}
     </section>
   );
+=======
+import ResourcePage from "../../components/ResourcePage.jsx";
+import { getInvoices } from "../../services/invoiceService.js";
+
+const columns = [
+  { key: "id", label: "ID" },
+  { key: "invoiceNumber", label: "Invoice" },
+  { key: "customerName", label: "Customer" },
+  { key: "invoiceDate", label: "Date" },
+  { key: "dueDate", label: "Due date" },
+  { key: "totalAmount", label: "Total" },
+  { key: "status", label: "Status" },
+];
+
+export default function Invoices() {
+  return <ResourcePage title="Invoices" load={getInvoices} columns={columns} detailPath={(id) => `/invoices/${id}`} />;
+>>>>>>> 315d366 (done)
 }
