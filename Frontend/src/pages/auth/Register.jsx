@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
@@ -44,6 +45,9 @@ export default function Register() {
     setError("");
     if (isSubmitting) return;
 
+    // Prevent duplicate submissions
+    if (loading) return;
+
     // Validate empty fields
     if (Object.values(form).some((value) => !value.trim())) {
       setError("Please fill in all fields.");
@@ -51,7 +55,9 @@ export default function Register() {
     }
 
     // Validate email
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    const email = form.email.trim().toLowerCase();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Please enter a valid email address.");
       return;
     }
@@ -88,36 +94,90 @@ export default function Register() {
       return;
     }
 
+    // Validate API URL
+    const API_URL = import.meta.env.VITE_API_URL;
+
+    if (!API_URL) {
+      setError(
+        "API URL is missing. Please configure VITE_API_URL in your frontend .env file."
+      );
+      return;
+    }
+
     try {
       setLoading(true);
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/register`,
+        `${API_URL.replace(/\/+$/, "")}/auth/register`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
           },
           body: JSON.stringify({
             name: form.fullName.trim(),
-            email: form.email.trim().toLowerCase(),
+            email,
             password: form.password,
           }),
         }
       );
 
-      const data = await response.json();
+      // Safely read response instead of directly calling response.json()
+      const responseText = await response.text();
 
+      let data = {};
+
+      if (responseText) {
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          console.error("Invalid API response:", responseText);
+
+          throw new Error(
+            `Server returned an invalid response (HTTP ${response.status}). Check your backend API.`
+          );
+        }
+      }
+
+      // Handle HTTP errors
       if (!response.ok) {
         throw new Error(
           data.message ||
           data.error ||
-          "Registration failed. Please try again."
+          `Registration failed (HTTP ${response.status}).`
         );
       }
 
+      // Handle empty response
+      if (!responseText) {
+        throw new Error(
+          "Server returned an empty response. Please check your registration controller."
+        );
+      }
+
+      // Validate authentication response
       if (!data.token || !data.user) {
-        throw new Error("Invalid response received from server.");
+        throw new Error(
+          data.message ||
+          "Registration response is missing the authentication token or user details."
+        );
+      }
+
+      // Validate role
+      const roleRoutes = {
+        ADMIN: "/admin/dashboard",
+        STAFF: "/staff/dashboard",
+        CUSTOMER: "/customer/dashboard",
+      };
+
+      const redirectTo =
+        data.redirectTo || roleRoutes[data.user.role];
+
+      if (!redirectTo) {
+        throw new Error(
+          "Invalid user role received from the server."
+        );
       }
 
       // Save authentication details
@@ -132,27 +192,21 @@ export default function Register() {
         );
       }
 
-      // Automatically redirect based on authenticated role
-      const roleRoutes = {
-        ADMIN: "/admin/dashboard",
-        STAFF: "/staff/dashboard",
-        CUSTOMER: "/customer/dashboard",
-      };
-
-      const redirectTo =
-        data.redirectTo ||
-        roleRoutes[data.user.role] ||
-        "/login";
-
+      // Redirect according to authenticated role
       navigate(redirectTo, { replace: true });
 
     } catch (err) {
       console.error("Registration error:", err);
 
-      setError(
-        err.message ||
-        "Unable to connect to server. Please try again."
-      );
+      if (err instanceof TypeError) {
+        setError(
+          "Unable to connect to the backend. Check whether your server is running and verify your API URL and CORS settings."
+        );
+      } else {
+        setError(
+          err.message || "Registration failed. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -230,6 +284,7 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="Enter your full name"
                   required
+                  autoComplete="name"
                   className={inputClass}
                 />
               </div>
@@ -258,6 +313,7 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="you@example.com"
                   required
+                  autoComplete="email"
                   className={inputClass}
                 />
               </div>
@@ -286,6 +342,7 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="Create a password"
                   required
+                  autoComplete="new-password"
                   className={`${inputClass} pr-12`}
                 />
 
@@ -333,6 +390,7 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="Confirm your password"
                   required
+                  autoComplete="new-password"
                   className={`${inputClass} pr-12`}
                 />
 

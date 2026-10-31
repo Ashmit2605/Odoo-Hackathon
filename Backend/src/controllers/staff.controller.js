@@ -2,7 +2,7 @@
 import { db } from '../db/index.js';
 import { customers, invoices, payments, users } from '../db/schema.js';
 import { eq, and, lt, sql } from 'drizzle-orm';
-import { customers, invoices, payments, subscriptions, quotationTemplates } from '../db/schema.js';
+import {subscriptions, quotationTemplates } from '../db/schema.js';
 
 // --- 1. DASHBOARD ---
 export const getDashboardSummary = async (req, res, next) => {

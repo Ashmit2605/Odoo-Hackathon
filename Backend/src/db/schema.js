@@ -233,20 +233,73 @@ export const payments = pgTable('payments', {
   index('idx_payments_invoice').on(t.invoiceId),
 ]);
 
-// ─────────────────────── STAFF ASSIGNMENTS ───────────────────
-export const staffAssignments = pgTable('staff_assignments', {
-  id:         serial('id').primaryKey(),
-  staffId:    integer('staff_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  customerId: integer('customer_id').notNull().references(() => customers.id, { onDelete: 'cascade' }),
+// ─────────────────────────── QUOTATIONS ─────────────────────────
+export const quotationStatus = pgEnum('quotation_status', ['PENDING', 'NEEDS_INFORMATION', 'ACCEPTED', 'REJECTED', 'EXPIRED']);
+export const quotationAction = pgEnum('quotation_action', ['REQUESTED', 'ACCEPTED', 'REJECTED', 'NEEDS_INFORMATION', 'UPDATED', 'PDF_GENERATED', 'CUSTOMER_REPLY']);
+
+export const quotations = pgTable('quotations', {
+  id:              serial('id').primaryKey(),
+  quotationNumber: varchar('quotation_number', { length: 50 }).notNull().unique(),
+  customerId:      integer('customer_id').notNull().references(() => customers.id),
+  requestedBy:     integer('requested_by').notNull().references(() => users.id),
+  status:          quotationStatus('status').notNull().default('PENDING'),
+  subtotal:        numeric('subtotal',        { precision: 12, scale: 2 }).notNull().default('0'),
+  discountAmount:  numeric('discount_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  taxAmount:       numeric('tax_amount',      { precision: 12, scale: 2 }).notNull().default('0'),
+  totalAmount:     numeric('total_amount',    { precision: 12, scale: 2 }).notNull().default('0'),
+  currency:        varchar('currency', { length: 10 }).notNull().default('INR'),
+  customerNotes:   text('customer_notes'),
+  adminNotes:      text('admin_notes'),
+  rejectionReason: text('rejection_reason'),
+  paymentTerms:    text('payment_terms'),
+  validUntil:      date('valid_until'),
+  pdfPath:         text('pdf_path'),
+  processedBy:     integer('processed_by').references(() => users.id, { onDelete: 'set null' }),
+  processedAt:     timestamp('processed_at', { withTimezone: true }),
+  createdAt:       timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt:       timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
-  unique('staff_customer_unique').on(t.staffId, t.customerId),
+  index('idx_quotations_customer').on(t.customerId),
+  index('idx_quotations_status').on(t.status),
 ]);
 
-// ─────────────────────────── AUDIT LOGS ──────────────────────
-export const auditLogs = pgTable('audit_logs', {
-  id:        serial('id').primaryKey(),
-  actorId:   integer('actor_id').references(() => users.id, { onDelete: 'set null' }),
-  action:    varchar('action', { length: 100 }).notNull(), // e.g., 'PAYMENT_RECORDED'
-  entityId:  integer('entity_id'), // e.g., invoice ID
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
-});
+export const quotationItems = pgTable('quotation_items', {
+  id:                   serial('id').primaryKey(),
+  quotationId:          integer('quotation_id').notNull().references(() => quotations.id, { onDelete: 'cascade' }),
+  productId:            integer('product_id').references(() => products.id),
+  variantId:            integer('variant_id').references(() => productVariants.id, { onDelete: 'set null' }),
+  planId:               integer('plan_id').references(() => plans.id, { onDelete: 'set null' }),
+  productNameSnapshot:  varchar('product_name_snapshot', { length: 200 }),
+  planNameSnapshot:     varchar('plan_name_snapshot', { length: 200 }),
+  billingCycleSnapshot: varchar('billing_cycle_snapshot', { length: 50 }),
+  quantity:             integer('quantity').notNull(),
+  unitPrice:            numeric('unit_price', { precision: 12, scale: 2 }).notNull().default('0'),
+  discount:             numeric('discount',   { precision: 12, scale: 2 }).notNull().default('0'),
+  taxRate:              numeric('tax_rate',   { precision: 5, scale: 2 }).notNull().default('0'),
+  taxAmount:            numeric('tax_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  lineTotal:            numeric('line_total', { precision: 12, scale: 2 }).notNull().default('0'),
+  createdAt:            timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  check('quotation_items_quantity_check', sql`${t.quantity} > 0`),
+]);
+
+export const quotationActivityLogs = pgTable('quotation_activity_logs', {
+  id:          serial('id').primaryKey(),
+  quotationId: integer('quotation_id').notNull().references(() => quotations.id, { onDelete: 'cascade' }),
+  performedBy: integer('performed_by').references(() => users.id),
+  action:      quotationAction('action').notNull(),
+  description: text('description'),
+  createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('idx_quotation_activity_logs_quotation').on(t.quotationId),
+]);
+
+export const quotationMessages = pgTable('quotation_messages', {
+  id:          serial('id').primaryKey(),
+  quotationId: integer('quotation_id').notNull().references(() => quotations.id, { onDelete: 'cascade' }),
+  senderId:    integer('sender_id').references(() => users.id),
+  message:     text('message').notNull(),
+  createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('idx_quotation_messages_quotation').on(t.quotationId),
+]);

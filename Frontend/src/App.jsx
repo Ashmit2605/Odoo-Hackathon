@@ -1,24 +1,33 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 
-// ==================== PUBLIC PAGES ====================
+// ==================== LAYOUT / DASHBOARDS ====================
 import Home from "./pages/Home/Home.jsx";
 import AdminDashboard from "./pages/AdminDash/Admindash.jsx";
 import StaffDashboard from "./pages/StaffDash/Staffdash.jsx";
 import CustomerDashboard from "./pages/CustomerDash/Customerdash.jsx";
 
-// Auth
+// ==================== AUTH ====================
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
 
-
-// ==================== SHARED MANAGEMENT PAGES ====================
-import Customers from "./pages/customers/Customers.jsx";
-import CustomerDetails from "./pages/customers/CustomerDetails.jsx";
+// ==================== ADMIN / SHARED PAGES ====================
+// Keep customer imports commented as requested.
+// import Customers from "./pages/customers/Customers.jsx";
+// import CustomerDetails from "./pages/customers/CustomerDetails.jsx";
 
 import Quotations from "./pages/quotations/Quotations.jsx";
 import AddQuotation from "./pages/quotations/AddQuotation.jsx";
+
+import AdminQuotations from "./pages/admin/quotations/AdminQuotations.jsx";
+import AdminQuotationDetails from "./pages/admin/quotations/AdminQuotationDetails.jsx";
 
 import Subscriptions from "./pages/subscriptions/Subscriptions.jsx";
 import SubscriptionDetails from "./pages/subscriptions/SubscriptionDetails.jsx";
@@ -34,57 +43,6 @@ import AddProduct from "./pages/products/AddProduct.jsx";
 import Plans from "./pages/plans/Plans.jsx";
 import AddPlan from "./pages/plans/AddPlan.jsx";
 
-
-// Simple role-based placeholder for the dashboard index routes
-const DashboardSection = ({ role }) => (
-  <div style={{ padding: 32 }}>{role} dashboard</div>
-);
-
-
-// Dashboard placeholder
-const DashboardSection = ({ role }) => (
-  <div style={{ padding: 32 }}>
-    <h1>{role} Dashboard</h1>
-    <p>Welcome to your dashboard.</p>
-  </div>
-);
-
-// Role-based route protection
-function ProtectedRoute({ allowedRoles }) {
-  const token = localStorage.getItem("token");
-
-  let user = null;
-
-  try {
-    user = JSON.parse(localStorage.getItem("user") || "null");
-  } catch {
-    user = null;
-  }
-
-  if (!token || !user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!allowedRoles.includes(user.role)) {
-    const roleRoutes = {
-      ADMIN: "/admin/dashboard",
-      STAFF: "/staff/dashboard",
-      CUSTOMER: "/customer/dashboard",
-    };
-
-    return (
-      <Navigate
-        to={roleRoutes[user.role] || "/login"}
-        replace
-      />
-    );
-  }
-
-  return <Outlet />;
-}
-
-
-export default function App() {
 // ==================== ADMIN PAGES ====================
 import QuotationTemplates from "./pages/admin/QuotationTemplates.jsx";
 import Discounts from "./pages/admin/Discounts.jsx";
@@ -106,411 +64,317 @@ import AdminProfile from "./components/AdminDashboard/AdminProfile.jsx";
 import StaffProfile from "./components/StaffDashboard/StaffProfile.jsx";
 import CustomerProfile from "./components/CustomerDashboard/CustomerProfile.jsx";
 
-// ==================== NEW CUSTOMER PAGES ====================
-// These are the customer-specific components we created.
-
+// ==================== CUSTOMER PAGES ====================
 import CustomerOverview from "./components/CustomerDashboard/CustomerOverview.jsx";
 import MySubscriptions from "./components/CustomerDashboard/MySubscriptions.jsx";
 import MyQuotations from "./components/CustomerDashboard/MyQuotations.jsx";
 import MyInvoices from "./components/CustomerDashboard/MyInvoices.jsx";
 import PaymentHistory from "./components/CustomerDashboard/PaymentHistory.jsx";
 
-// Temporary placeholders for Admin and Staff overview pages.
+import RequestQuotation from "./pages/customer/quotations/RequestQuotation.jsx";
+import CustomerQuotationDetails from "./pages/customer/quotations/CustomerQuotationDetails.jsx";
+
+// ==================== DASHBOARD PLACEHOLDER ====================
 const DashboardSection = ({ role }) => (
   <div style={{ padding: 32 }}>
-    {role} dashboard
+    <h1>{role} Dashboard</h1>
+    <p>Welcome to your dashboard.</p>
   </div>
 );
 
+// ==================== ROLE-BASED ROUTE PROTECTION ====================
+function ProtectedRoute({ allowedRoles = [] }) {
+  const token =
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("token");
+
+  const storedUser =
+    localStorage.getItem("user") ||
+    sessionStorage.getItem("user");
+
+  let user = null;
+
+  try {
+    user = storedUser ? JSON.parse(storedUser) : null;
+  } catch {
+    user = null;
+  }
+
+  if (!token || !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const userRole = user.role?.toUpperCase();
+
+  if (!allowedRoles.includes(userRole)) {
+    const roleRoutes = {
+      ADMIN: "/admin/dashboard",
+      STAFF: "/staff/dashboard",
+      CUSTOMER: "/customer/dashboard",
+    };
+
+    return (
+      <Navigate
+        to={roleRoutes[userRole] || "/login"}
+        replace
+      />
+    );
+  }
+
+  return <Outlet />;
+}
+
+// ==================== MAIN APP ====================
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public */}
 
         {/* ==================== PUBLIC ROUTES ==================== */}
-
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
 
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
-        {/* Backwards compat: teammate's old link still works */}
-        <Route path="/signup" element={<Navigate to="/register" replace />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        <Route path="/signup" element={<Register />} />
+        <Route
+          path="/signup"
+          element={<Navigate to="/register" replace />}
+        />
 
         <Route
           path="/forgot-password"
           element={<ForgotPassword />}
         />
 
-        {/* Admin */}
-        <Route path="/admin" element={<AdminDashboard />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardSection role="admin" />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="customers/:id" element={<CustomerDetails />} />
-          <Route path="quotations" element={<Quotations />} />
-          <Route path="quotations/new" element={<AddQuotation />} />
-          <Route path="subscriptions" element={<Subscriptions />} />
-          <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
-          <Route path="invoices" element={<Invoices />} />
-          <Route path="invoices/:id" element={<InvoiceDetails />} />
-          <Route path="payments" element={<Payments />} />
-          <Route path="products" element={<Products />} />
-          <Route path="products/new" element={<AddProduct />} />
-          <Route path="plans" element={<Plans />} />
-          <Route path="plans/new" element={<AddPlan />} />
-          <Route path="*" element={<DashboardSection role="admin" />} />
         {/* ==================== ADMIN ROUTES ==================== */}
+        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/admin" element={<AdminDashboard />}>
 
-        <Route
-          path="/admin"
-          element={<AdminDashboard />}
-        >
-          <Route
-            index
-            element={<Navigate to="dashboard" replace />}
-          />
+            <Route
+              index
+              element={<Navigate to="dashboard" replace />}
+            />
 
-          <Route
-            path="dashboard"
-            element={<DashboardSection role="admin" />}
-          />
+            <Route
+              path="dashboard"
+              element={<DashboardSection role="Admin" />}
+            />
 
-          <Route
-            path="profile"
-            element={<AdminProfile />}
-          />
+            {/* Customer routes intentionally remain commented. */}
+            {/* <Route path="customers" element={<Customers />} />
+            <Route path="customers/:id" element={<CustomerDetails />} /> */}
 
-          <Route
-            path="customers"
-            element={<Customers />}
-          />
+            {/* Quotations */}
+            <Route path="quotations" element={<AdminQuotations />} />
+            <Route
+              path="quotations/new"
+              element={<AddQuotation />}
+            />
+            <Route
+              path="quotations/:id"
+              element={<AdminQuotationDetails />}
+            />
 
-          <Route
-            path="customers/:id"
-            element={<CustomerDetails />}
-          />
+            <Route
+              path="quotation-templates"
+              element={<QuotationTemplates />}
+            />
 
-          <Route
-            path="quotations"
-            element={<Quotations />}
-          />
+            {/* Subscriptions */}
+            <Route path="subscriptions" element={<Subscriptions />} />
+            <Route
+              path="subscriptions/:id"
+              element={<SubscriptionDetails />}
+            />
 
-          <Route
-            path="quotations/new"
-            element={<AddQuotation />}
-          />
+            {/* Invoices */}
+            <Route path="invoices" element={<Invoices />} />
+            <Route
+              path="invoices/:id"
+              element={<InvoiceDetails />}
+            />
 
-          <Route
-            path="subscriptions"
-            element={<Subscriptions />}
-          />
+            {/* Payments */}
+            <Route path="payments" element={<Payments />} />
 
-          <Route
-            path="subscriptions/:id"
-            element={<SubscriptionDetails />}
-          />
+            {/* Products */}
+            <Route path="products" element={<Products />} />
+            <Route path="products/new" element={<AddProduct />} />
 
-          <Route
-            path="invoices"
-            element={<Invoices />}
-          />
+            {/* Plans */}
+            <Route path="plans" element={<Plans />} />
+            <Route path="plans/new" element={<AddPlan />} />
 
-          <Route
-            path="invoices/:id"
-            element={<InvoiceDetails />}
-          />
+            {/* Other Admin Pages */}
+            <Route path="discounts" element={<Discounts />} />
+            <Route path="taxes" element={<Taxes />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="audit-logs" element={<AuditLog />} />
+            <Route
+              path="users"
+              element={<UserManagement />}
+            />
 
-          <Route
-            path="payments"
-            element={<Payments />}
-          />
+            {/* Profile and Settings */}
+            <Route path="profile" element={<AdminProfile />} />
+            <Route path="settings" element={<Settings />} />
 
-          <Route
-            path="products"
-            element={<Products />}
-          />
+            <Route
+              path="*"
+              element={<Navigate to="/admin/dashboard" replace />}
+            />
 
-          <Route
-            path="products/new"
-            element={<AddProduct />}
-          />
-
-          <Route
-            path="plans"
-            element={<Plans />}
-          />
-
-          <Route
-            path="plans/new"
-            element={<AddPlan />}
-          />
-
-          <Route
-            path="templates"
-            element={<QuotationTemplates />}
-          />
-
-          <Route
-            path="discounts"
-            element={<Discounts />}
-          />
-
-          <Route
-            path="taxes"
-            element={<Taxes />}
-          />
-
-          <Route
-            path="reports"
-            element={<AdminReports />}
-          />
-
-          <Route
-            path="audit-log"
-            element={<AuditLog />}
-          />
-
-          <Route
-            path="users"
-            element={<UserManagement />}
-          />
-
-          <Route
-            path="settings"
-            element={<Settings />}
-          />
-
-          <Route
-            path="*"
-            element={<DashboardSection role="admin" />}
-          />
+          </Route>
         </Route>
 
-        {/* STAFF ROUTES */}
+        {/* ==================== STAFF ROUTES ==================== */}
         <Route element={<ProtectedRoute allowedRoles={["STAFF"]} />}>
           <Route path="/staff" element={<StaffDashboard />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
 
-            <Route path="dashboard" element={<DashboardSection role="Staff" />} />
+            <Route
+              index
+              element={<Navigate to="dashboard" replace />}
+            />
 
-            <Route path="customers" element={<Customers />} />
-            <Route path="customers/:id" element={<CustomerDetails />} />
+            <Route
+              path="dashboard"
+              element={<DashboardSection role="Staff" />}
+            />
+
+            {/* Customer routes intentionally remain commented. */}
+            {/* <Route path="customers" element={<Customers />} />
+            <Route path="customers/:id" element={<CustomerDetails />} /> */}
 
             <Route path="quotations" element={<Quotations />} />
 
+            <Route
+              path="quotations/:id"
+              element={<AdminQuotationDetails />}
+            />
+
             <Route path="subscriptions" element={<Subscriptions />} />
-            <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
+
+            <Route
+              path="subscriptions/:id"
+              element={<SubscriptionDetails />}
+            />
 
             <Route path="invoices" element={<Invoices />} />
-            <Route path="invoices/:id" element={<InvoiceDetails />} />
+
+            <Route
+              path="invoices/:id"
+              element={<InvoiceDetails />}
+            />
 
             <Route path="payments" element={<Payments />} />
 
-            <Route path="products" element={<Products />} />
+            <Route path="overdue" element={<OverdueInvoices />} />
+
+            <Route path="products" element={<ProductCatalog />} />
+
             <Route path="plans" element={<Plans />} />
+
+            <Route path="reports" element={<StaffReports />} />
+
+            <Route path="profile" element={<StaffProfile />} />
+
+            <Route path="settings" element={<Settings />} />
+
+            <Route
+              path="*"
+              element={<Navigate to="/staff/dashboard" replace />}
+            />
+
           </Route>
-        {/* ==================== STAFF ROUTES ==================== */}
-
-        <Route
-          path="/staff"
-          element={<StaffDashboard />}
-        >
-          <Route
-            index
-            element={<Navigate to="dashboard" replace />}
-          />
-
-          <Route
-            path="dashboard"
-            element={<DashboardSection role="staff" />}
-          />
-
-          <Route
-            path="profile"
-            element={<StaffProfile />}
-          />
-
-          <Route
-            path="customers"
-            element={<Customers />}
-          />
-
-          <Route
-            path="customers/:id"
-            element={<CustomerDetails />}
-          />
-
-          <Route
-            path="quotations"
-            element={<Quotations />}
-          />
-
-          <Route
-            path="subscriptions"
-            element={<Subscriptions />}
-          />
-
-          <Route
-            path="subscriptions/:id"
-            element={<SubscriptionDetails />}
-          />
-
-          <Route
-            path="invoices"
-            element={<Invoices />}
-          />
-
-          <Route
-            path="invoices/:id"
-            element={<InvoiceDetails />}
-          />
-
-          <Route
-            path="payments"
-            element={<Payments />}
-          />
-
-          <Route
-            path="overdue"
-            element={<OverdueInvoices />}
-          />
-
-          <Route
-            path="products"
-            element={<ProductCatalog />}
-          />
-
-          <Route
-            path="plans"
-            element={<Plans />}
-          />
-
-          <Route
-            path="reports"
-            element={<StaffReports />}
-          />
-
-          <Route
-            path="settings"
-            element={<Settings />}
-          />
-
-          <Route
-            path="*"
-            element={<DashboardSection role="staff" />}
-          />
         </Route>
 
-        {/* CUSTOMER ROUTES */}
+        {/* ==================== CUSTOMER ROUTES ==================== */}
         <Route element={<ProtectedRoute allowedRoles={["CUSTOMER"]} />}>
           <Route path="/customer" element={<CustomerDashboard />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
 
-            <Route path="dashboard" element={<DashboardSection role="Customer" />} />
+            <Route
+              index
+              element={<Navigate to="dashboard" replace />}
+            />
 
-            <Route path="quotations" element={<Quotations />} />
+            {/* Customer Overview */}
+            <Route
+              path="dashboard"
+              element={<CustomerOverview />}
+            />
 
-            <Route path="subscriptions" element={<Subscriptions />} />
-            <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
+            {/* Customer Profile */}
+            <Route
+              path="profile"
+              element={<CustomerProfile />}
+            />
 
-            <Route path="invoices" element={<Invoices />} />
-            <Route path="invoices/:id" element={<InvoiceDetails />} />
+            {/* Product Catalog */}
+            <Route
+              path="products"
+              element={<ProductCatalog />}
+            />
 
-            <Route path="payments" element={<Payments />} />
+            {/* My Subscriptions */}
+            <Route
+              path="subscriptions"
+              element={<MySubscriptions />}
+            />
 
-            <Route path="plans" element={<Plans />} />
+            <Route
+              path="subscriptions/:id"
+              element={<SubscriptionDetails />}
+            />
+
+            {/* My Quotations */}
+            <Route
+              path="quotations"
+              element={<MyQuotations />}
+            />
+
+            <Route
+              path="quotations/new"
+              element={<RequestQuotation />}
+            />
+
+            <Route
+              path="quotations/:id"
+              element={<CustomerQuotationDetails />}
+            />
+
+            {/* My Invoices */}
+            <Route
+              path="invoices"
+              element={<MyInvoices />}
+            />
+
+            <Route
+              path="invoices/:id"
+              element={<InvoiceDetails />}
+            />
+
+            {/* Payment History */}
+            <Route
+              path="payments"
+              element={<PaymentHistory />}
+            />
+
+            {/* Settings */}
+            <Route
+              path="settings"
+              element={<Settings />}
+            />
+
+            <Route
+              path="*"
+              element={<Navigate to="/customer/dashboard" replace />}
+            />
+
           </Route>
-        {/* ==================== CUSTOMER ROUTES ==================== */}
-        {/* UPDATED: All pages now use customer-specific components. */}
-
-        <Route
-          path="/customer"
-          element={<CustomerDashboard />}
-        >
-          {/* Default customer route */}
-          <Route
-            index
-            element={<Navigate to="dashboard" replace />}
-          />
-
-          {/* 1. Customer Overview */}
-          <Route
-            path="dashboard"
-            element={<CustomerOverview />}
-          />
-
-          {/* 2. My Profile — Already completed */}
-          <Route
-            path="profile"
-            element={<CustomerProfile />}
-          />
-
-          <Route
-            path="products"
-            element={<ProductCatalog />}
-          />
-
-          {/* 3. My Subscriptions */}
-          <Route
-            path="subscriptions"
-            element={<MySubscriptions />}
-          />
-
-          {/* 4. My Quotations */}
-          <Route
-            path="quotations"
-            element={<MyQuotations />}
-          />
-
-          {/* 6. My Invoices */}
-          <Route
-            path="invoices"
-            element={<MyInvoices />}
-          />
-
-          {/* 7. Payment History */}
-          <Route
-            path="payments"
-            element={<PaymentHistory />}
-          />
-
-          {/* Existing customer detail routes */}
-          <Route
-            path="subscriptions/:id"
-            element={<SubscriptionDetails />}
-          />
-
-          <Route
-            path="invoices/:id"
-            element={<InvoiceDetails />}
-          />
-
-          {/* Shared Settings */}
-          <Route
-            path="settings"
-            element={<Settings />}
-          />
-
-          {/* Unknown customer routes */}
-          <Route
-            path="*"
-            element={
-              <Navigate to="/customer/dashboard" replace />
-            }
-          />
         </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-
-        {/* ==================== FALLBACK ROUTE ==================== */}
-
+        {/* ==================== FALLBACK ==================== */}
         <Route
           path="*"
           element={<Navigate to="/login" replace />}

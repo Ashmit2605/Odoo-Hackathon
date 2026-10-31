@@ -9,6 +9,7 @@ import productRouter from './routes/product.routes.js';
 import invoiceRouter from './routes/invoice.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 import staffRouter from './routes/staff.routes.js';
+import quotationRouter from './routes/quotation.routes.js';
 
 const app = express();
 
