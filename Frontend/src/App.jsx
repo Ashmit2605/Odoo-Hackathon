@@ -1,20 +1,17 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Navigate} from "react-router-dom";
+// Layout / dashboards
 import Home from "./pages/Home/Home.jsx";
+import AdminDashboard from "./pages/AdminDash/Admindash.jsx";
+import StaffDashboard from "./pages/StaffDash/Staffdash.jsx";
+import CustomerDashboard from "./pages/CustomerDash/Customerdash.jsx";
+
+// Auth
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
 
-export default function App() {
-
-import AdminDashboard from "./pages/AdminDash/Admindash.jsx";
-import StaffDashboard from "./pages/StaffDash/Staffdash.jsx";
-import CustomerDashboard from "./pages/CustomerDash/Customerdash.jsx";
-const DashboardSection = ({ role }) => <div style={{ padding: 32 }}>{role} dashboard</div>;
-
-// Admin pages
-const AdminDash = () => <div style={{ padding: 32 }}>Admin Dashboard</div>;
+// Admin / shared pages
 import Customers from "./pages/customers/Customers.jsx";
 import CustomerDetails from "./pages/customers/CustomerDetails.jsx";
 import Quotations from "./pages/quotations/Quotations.jsx";
@@ -29,33 +26,27 @@ import AddProduct from "./pages/products/AddProduct.jsx";
 import Plans from "./pages/plans/Plans.jsx";
 import AddPlan from "./pages/plans/AddPlan.jsx";
 
-// Auth pages
-import Login from "./pages/auth/Login.jsx";
-import Register from "./pages/auth/Register.jsx";
-import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
+// Simple role-based placeholder for the dashboard index routes
+const DashboardSection = ({ role }) => (
+  <div style={{ padding: 32 }}>{role} dashboard</div>
+);
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-      </Routes>
-    </BrowserRouter>
-  );
-    <BrowserRouter>
-      <Routes>
-        {/* Auth */}
-        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        {/* Backwards compat: teammate's old link still works */}
+        <Route path="/signup" element={<Navigate to="/register" replace />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Admin */}
         <Route path="/admin" element={<AdminDashboard />}>
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDash />} />
+          <Route path="dashboard" element={<DashboardSection role="admin" />} />
           <Route path="customers" element={<Customers />} />
           <Route path="customers/:id" element={<CustomerDetails />} />
           <Route path="quotations" element={<Quotations />} />
@@ -103,12 +94,9 @@ function App() {
           <Route path="*" element={<DashboardSection role="customer" />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
-<<<<<<< HEAD
-
-export default App;
