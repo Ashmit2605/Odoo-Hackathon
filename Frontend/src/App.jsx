@@ -26,10 +26,55 @@ import AddProduct from "./pages/products/AddProduct.jsx";
 import Plans from "./pages/plans/Plans.jsx";
 import AddPlan from "./pages/plans/AddPlan.jsx";
 
+
 // Simple role-based placeholder for the dashboard index routes
 const DashboardSection = ({ role }) => (
   <div style={{ padding: 32 }}>{role} dashboard</div>
 );
+
+
+// Dashboard placeholder
+const DashboardSection = ({ role }) => (
+  <div style={{ padding: 32 }}>
+    <h1>{role} Dashboard</h1>
+    <p>Welcome to your dashboard.</p>
+  </div>
+);
+
+// Role-based route protection
+function ProtectedRoute({ allowedRoles }) {
+  const token = localStorage.getItem("token");
+
+  let user = null;
+
+  try {
+    user = JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    user = null;
+  }
+
+  if (!token || !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(user.role)) {
+    const roleRoutes = {
+      ADMIN: "/admin/dashboard",
+      STAFF: "/staff/dashboard",
+      CUSTOMER: "/customer/dashboard",
+    };
+
+    return (
+      <Navigate
+        to={roleRoutes[user.role] || "/login"}
+        replace
+      />
+    );
+  }
+
+  return <Outlet />;
+}
+
 
 export default function App() {
   return (
@@ -63,39 +108,55 @@ export default function App() {
           <Route path="*" element={<DashboardSection role="admin" />} />
         </Route>
 
-        {/* Staff */}
-        <Route path="/staff" element={<StaffDashboard />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardSection role="staff" />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="customers/:id" element={<CustomerDetails />} />
-          <Route path="quotations" element={<Quotations />} />
-          <Route path="subscriptions" element={<Subscriptions />} />
-          <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
-          <Route path="invoices" element={<Invoices />} />
-          <Route path="invoices/:id" element={<InvoiceDetails />} />
-          <Route path="payments" element={<Payments />} />
-          <Route path="products" element={<Products />} />
-          <Route path="plans" element={<Plans />} />
-          <Route path="*" element={<DashboardSection role="staff" />} />
+        {/* STAFF ROUTES */}
+        <Route element={<ProtectedRoute allowedRoles={["STAFF"]} />}>
+          <Route path="/staff" element={<StaffDashboard />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+
+            <Route path="dashboard" element={<DashboardSection role="Staff" />} />
+
+            <Route path="customers" element={<Customers />} />
+            <Route path="customers/:id" element={<CustomerDetails />} />
+
+            <Route path="quotations" element={<Quotations />} />
+
+            <Route path="subscriptions" element={<Subscriptions />} />
+            <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
+
+            <Route path="invoices" element={<Invoices />} />
+            <Route path="invoices/:id" element={<InvoiceDetails />} />
+
+            <Route path="payments" element={<Payments />} />
+
+            <Route path="products" element={<Products />} />
+            <Route path="plans" element={<Plans />} />
+          </Route>
         </Route>
 
-        {/* Customer */}
-        <Route path="/customer" element={<CustomerDashboard />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardSection role="customer" />} />
-          <Route path="quotations" element={<Quotations />} />
-          <Route path="subscriptions" element={<Subscriptions />} />
-          <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
-          <Route path="invoices" element={<Invoices />} />
-          <Route path="invoices/:id" element={<InvoiceDetails />} />
-          <Route path="payments" element={<Payments />} />
-          <Route path="plans" element={<Plans />} />
-          <Route path="*" element={<DashboardSection role="customer" />} />
+        {/* CUSTOMER ROUTES */}
+        <Route element={<ProtectedRoute allowedRoles={["CUSTOMER"]} />}>
+          <Route path="/customer" element={<CustomerDashboard />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+
+            <Route path="dashboard" element={<DashboardSection role="Customer" />} />
+
+            <Route path="quotations" element={<Quotations />} />
+
+            <Route path="subscriptions" element={<Subscriptions />} />
+            <Route path="subscriptions/:id" element={<SubscriptionDetails />} />
+
+            <Route path="invoices" element={<Invoices />} />
+            <Route path="invoices/:id" element={<InvoiceDetails />} />
+
+            <Route path="payments" element={<Payments />} />
+
+            <Route path="plans" element={<Plans />} />
+          </Route>
         </Route>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
+
       </Routes>
     </BrowserRouter>
   );
