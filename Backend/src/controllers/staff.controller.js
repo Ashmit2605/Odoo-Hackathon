@@ -1,4 +1,8 @@
 // Backend/src/controllers/staff.controller.js
+import { db } from '../db/index.js';
+import { customers, invoices, payments, users } from '../db/schema.js';
+import { eq, and, lt, sql } from 'drizzle-orm';
+import {subscriptions, quotationTemplates } from '../db/schema.js';
 import * as staffService from '../services/staff.service.js';
 
 export const getDashboardSummary = async (req, res, next) => {

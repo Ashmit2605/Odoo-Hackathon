@@ -22,54 +22,90 @@ function publicCustomer(c) {
     address: c.address,
   };
 }
+export async function register({
+  name,
+  email,
+  password,
+  companyName,
+  phone,
+  address,
+}) {
+  const normalizedEmail = email.trim().toLowerCase();
 
-export async function register({ name, email, password, companyName, phone, address }) {
   const existing = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.email, email))
+    .where(eq(users.email, normalizedEmail))
     .limit(1);
-  if (existing.length) throw conflict('Email already registered');
+
+  if (existing.length) {
+    throw conflict("Email already registered");
+  }
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  // 1) Create the user (role CUSTOMER — enforced, not accepted from client)
-  const [createdUser] = await db
-    .insert(users)
-    .values({ name, email, passwordHash, role: 'CUSTOMER' })
-    .returning();
-
-  // 2) Link or create the customer record
-  // If an admin pre-created a customer with this email and no user, link it.
-  const [preExisting] = await db
-    .select()
-    .from(customers)
-    .where(and(eq(customers.email, email), isNull(customers.userId)))
-    .limit(1);
-
-  let customerRow;
-  if (preExisting) {
-    [customerRow] = await db
-      .update(customers)
-      .set({ userId: createdUser.id, companyName, phone, address })
-      .where(eq(customers.id, preExisting.id))
+  const result = await db.transaction(async (tx) => {
+    const [createdUser] = await tx
+      .insert(users)
+      .values({
+        name: name.trim(),
+        email: normalizedEmail,
+        passwordHash,
+        role: "CUSTOMER",
+      })
       .returning();
-  } else {
-    [customerRow] = await db
-      .insert(customers)
-      .values({ userId: createdUser.id, name, email, companyName, phone, address })
-      .returning();
-  }
 
-  const token = signAccessToken(createdUser);
+    const [preExisting] = await tx
+      .select()
+      .from(customers)
+      .where(
+        and(
+          eq(customers.email, normalizedEmail),
+          isNull(customers.userId)
+        )
+      )
+      .limit(1);
+
+    let customerRow;
+
+    if (preExisting) {
+      [customerRow] = await tx
+        .update(customers)
+        .set({
+          userId: createdUser.id,
+          name: name.trim(),
+          companyName: companyName || null,
+          phone: phone || null,
+          address: address || null,
+        })
+        .where(eq(customers.id, preExisting.id))
+        .returning();
+    } else {
+      [customerRow] = await tx
+        .insert(customers)
+        .values({
+          userId: createdUser.id,
+          name: name.trim(),
+          email: normalizedEmail,
+          companyName: companyName || null,
+          phone: phone || null,
+          address: address || null,
+        })
+        .returning();
+    }
+
+    return { createdUser, customerRow };
+  });
+
+  const token = signAccessToken(result.createdUser);
+
   return {
-    user: publicUser(createdUser),
-    customer: publicCustomer(customerRow),
+    user: publicUser(result.createdUser),
+    customer: publicCustomer(result.customerRow),
     token,
-    redirectTo: homeForRole(createdUser.role),
+    redirectTo: homeForRole(result.createdUser.role),
   };
 }
-
 export async function login({ email, password }) {
   const [user] = await db
     .select()
