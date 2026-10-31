@@ -1,41 +1,21 @@
-import app from "./app.js";
-import { connectDatabase, pool } from "./db/index.js";
+import 'dotenv/config';
+import app from './app.js';                    // ✅ NOT './src/app.js'
+import { connectDatabase, pool } from './db/index.js';  // ✅ NOT './src/db/index.js'
 
-const port = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 5000;
 
-async function startServer() {
+async function start() {
   try {
     await connectDatabase();
-    console.log("Connected to PostgreSQL");
-
-    const server = app.listen(port, () => {
-      console.log(`Backend server listening on port ${port}`);
-    });
-
-    const shutdown = (signal) => {
-      console.log(`${signal} received; closing server`);
-      server.close(async (error) => {
-        if (error) {
-          console.error("Failed to close HTTP server:", error);
-          process.exitCode = 1;
-        }
-
-        try {
-          await pool.end();
-        } catch (poolError) {
-          console.error("Failed to close PostgreSQL pool:", poolError);
-          process.exitCode = 1;
-        }
-      });
-    };
-
-    process.once("SIGINT", () => shutdown("SIGINT"));
-    process.once("SIGTERM", () => shutdown("SIGTERM"));
-  } catch (error) {
-    console.error("Failed to start backend:", error);
-    await pool.end();
-    process.exitCode = 1;
+    console.log('✅ Database connected');
+    app.listen(PORT, () => console.log(`🚀 Server on http://localhost:${PORT}`));
+  } catch (err) {
+    console.error('❌ Failed to start:', err);
+    process.exit(1);
   }
 }
 
-startServer();
+start();
+
+process.on('SIGINT',  async () => { await pool.end(); process.exit(0); });
+process.on('SIGTERM', async () => { await pool.end(); process.exit(0); });
