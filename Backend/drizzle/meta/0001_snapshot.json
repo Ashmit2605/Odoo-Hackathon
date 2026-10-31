@@ -1678,8 +1678,12 @@
       "schema": "public",
       "values": [
         "DRAFT",
-        "PENDING_PAYMENT",
+        "QUOTATION",
+        "CONFIRMED",
         "ACTIVE",
+        "PAUSED",
+        "CLOSED",
+        "PENDING_PAYMENT",
         "PAST_DUE",
         "CANCEL_SCHEDULED",
         "CANCELED",

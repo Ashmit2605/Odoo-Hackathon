@@ -8,15 +8,18 @@ import { sql } from 'drizzle-orm';
 // ─────────────────────────── ENUMS ───────────────────────────
 export const userRole           = pgEnum('user_role', ['ADMIN', 'STAFF', 'CUSTOMER']);
 export const billingFrequency   = pgEnum('billing_frequency', ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']);
-// Replace your current subscriptionStatus with this:
 export const subscriptionStatus = pgEnum('subscription_status', [
-  'DRAFT', 
-  'PENDING_PAYMENT', 
-  'ACTIVE', 
-  'PAST_DUE', 
-  'CANCEL_SCHEDULED', 
-  'CANCELED', 
-  'EXPIRED'
+  'DRAFT',
+  'QUOTATION',
+  'CONFIRMED',
+  'ACTIVE',
+  'PAUSED',
+  'CLOSED',
+  'PENDING_PAYMENT',
+  'PAST_DUE',
+  'CANCEL_SCHEDULED',
+  'CANCELED',
+  'EXPIRED',
 ]);
 export const invoiceStatus      = pgEnum('invoice_status', ['DRAFT', 'CONFIRMED', 'PAID', 'CANCELLED']);
 export const discountType       = pgEnum('discount_type', ['FIXED', 'PERCENTAGE']);

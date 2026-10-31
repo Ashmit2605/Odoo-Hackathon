@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
-  LayoutDashboard, Users, FileText, Repeat, Receipt, CreditCard, Package, CalendarClock, BarChart3, AlertTriangle,
+  LayoutDashboard, Users, FileText, Repeat, Receipt, CreditCard, Package, CalendarClock, AlertTriangle,
   Eye, LogOut, Menu, PanelLeftClose, PanelLeftOpen, UserRound, X, ChevronDown,
 } from "lucide-react";
 
@@ -46,10 +46,6 @@ const MENU = [
       { label: "Products", to: "/products", icon: Package, readOnly: true },
       { label: "Plans", to: "/plans", icon: CalendarClock, readOnly: true },
     ],
-  },
-  {
-    title: "Insights",
-    items: [{ label: "Reports (limited)", to: "/reports", icon: BarChart3 }],
   },
 ];
 

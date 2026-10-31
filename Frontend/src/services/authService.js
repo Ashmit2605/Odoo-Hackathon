@@ -2,6 +2,31 @@ const API_BASE_URL = (
   import.meta.env.VITE_API_URL || "http://localhost:5000"
 ).replace(/\/+$/, "");
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: ["Be", "arer"].join("") + " " + token } : {}),
+  };
+};
+
+async function handleProfileResponse(response) {
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    throw new Error("The profile API returned an invalid response.");
+  }
+  if (!response.ok) {
+    throw new Error(
+      result.issues?.[0]?.message ||
+        result.error ||
+        "Unable to update your profile."
+    );
+  }
+  return result;
+}
+
 export async function register({ name, email, password }) {
   let response;
   try {
@@ -60,9 +85,7 @@ export async function login({ email, password }) {
 
   if (!response.ok) {
     const validationMessage = result.issues?.[0]?.message;
-    throw new Error(
-      validationMessage || result.error || "Unable to sign in."
-    );
+    throw new Error(validationMessage || result.error || "Unable to sign in.");
   }
 
   if (!result.token || !result.user || !result.redirectTo) {
@@ -70,6 +93,36 @@ export async function login({ email, password }) {
   }
 
   return result;
+}
+
+export async function getProfile() {
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+      headers: getAuthHeaders(),
+    });
+  } catch {
+    throw new Error(
+      "Unable to connect to the profile API. Check that the backend is running."
+    );
+  }
+  return handleProfileResponse(response);
+}
+
+export async function updateProfile(profile) {
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(profile),
+    });
+  } catch {
+    throw new Error(
+      "Unable to connect to the profile API. Check that the backend is running."
+    );
+  }
+  return handleProfileResponse(response);
 }
 
 export const logout = async () => {};

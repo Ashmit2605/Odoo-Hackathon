@@ -29,4 +29,4 @@ export const updateProfileSchema = z.object({
   phone:       z.string().trim().max(30).optional(),
   companyName: z.string().trim().max(200).optional(),
   address:     z.string().trim().max(2000).optional(),
-});
+}).refine((data) => Object.keys(data).length > 0, 'At least one profile field is required');

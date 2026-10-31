@@ -9,6 +9,7 @@ import productRouter from './routes/product.routes.js';
 import invoiceRouter from './routes/invoice.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 import staffRouter from './routes/staff.routes.js';
+import adminRouter from './routes/admin.routes.js';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/health', healthRouter);
 
 // Auth endpoints
 app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api/staff', staffRouter); // 👈 ADD THIS
 
 // Products MVC

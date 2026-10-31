@@ -198,6 +198,15 @@ export async function updateProfile(userId, data) {
     customerRow = c ?? null;
   }
 
+  if (customerRow && data.name !== undefined) {
+    const [updatedCustomer] = await db
+      .update(customers)
+      .set({ name: updatedUser.name })
+      .where(eq(customers.id, customerRow.id))
+      .returning();
+    customerRow = updatedCustomer;
+  }
+
   return {
     user:     publicUser(updatedUser),
     customer: customerRow ? publicCustomer(customerRow) : null,

@@ -2,11 +2,27 @@ import { eq, desc, and, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import {
   invoices, invoiceItems, payments, customers, products, taxRates,
-  subscriptions, subscriptionItems,
+  subscriptions, subscriptionItems, plans,
 } from '../db/schema.js';
 
 let _subCounter = Date.now();
 const nextSubNumber = () => `SUB-${++_subCounter}`;
+
+/* get or create a sentinel plan used for direct product purchases */
+let _productPlanId = null;
+async function getProductPlanId(tx = db) {
+  if (_productPlanId) return _productPlanId;
+  const [existing] = await tx.select({ id: plans.id })
+    .from(plans).where(eq(plans.name, 'Product Purchase')).limit(1);
+  if (existing) { _productPlanId = existing.id; return _productPlanId; }
+  const [created] = await tx.insert(plans).values({
+    name: 'Product Purchase',
+    price: '0',
+    billingFrequency: 'MONTHLY',
+  }).returning({ id: plans.id });
+  _productPlanId = created.id;
+  return _productPlanId;
+}
 
 /* resolve customerId for the logged-in user */
 async function getCustomerId(userId) {
@@ -45,13 +61,14 @@ export async function createInvoiceFromProduct(req, res, next) {
     const { product, taxPct, unitPrice, qty, subtotal, taxAmount, total } = resolved;
 
     const today = new Date().toISOString().slice(0, 10);
+    const planId = await getProductPlanId();
 
     const result = await db.transaction(async (tx) => {
       // Create subscription (ACTIVE)
       const [sub] = await tx.insert(subscriptions).values({
         subscriptionNumber: nextSubNumber(),
         customerId,
-        planId: 1, // default plan placeholder — adjust if you have a real planId
+        planId,
         startDate: today,
         status: 'ACTIVE',
       }).returning();
@@ -108,12 +125,13 @@ export async function requestQuotation(req, res, next) {
 
     const today = new Date().toISOString().slice(0, 10);
     const validUntil = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
+    const planId = await getProductPlanId();
 
     const sub = await db.transaction(async (tx) => {
       const [s] = await tx.insert(subscriptions).values({
         subscriptionNumber: nextSubNumber(),
         customerId,
-        planId: 1,
+        planId,
         startDate: today,
         quotationValidUntil: validUntil,
         status: 'QUOTATION',
