@@ -8,7 +8,16 @@ import { sql } from 'drizzle-orm';
 // ─────────────────────────── ENUMS ───────────────────────────
 export const userRole           = pgEnum('user_role', ['ADMIN', 'STAFF', 'CUSTOMER']);
 export const billingFrequency   = pgEnum('billing_frequency', ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']);
-export const subscriptionStatus = pgEnum('subscription_status', ['DRAFT', 'QUOTATION', 'CONFIRMED', 'ACTIVE', 'PAUSED', 'CLOSED']);
+// Replace your current subscriptionStatus with this:
+export const subscriptionStatus = pgEnum('subscription_status', [
+  'DRAFT', 
+  'PENDING_PAYMENT', 
+  'ACTIVE', 
+  'PAST_DUE', 
+  'CANCEL_SCHEDULED', 
+  'CANCELED', 
+  'EXPIRED'
+]);
 export const invoiceStatus      = pgEnum('invoice_status', ['DRAFT', 'CONFIRMED', 'PAID', 'CANCELLED']);
 export const discountType       = pgEnum('discount_type', ['FIXED', 'PERCENTAGE']);
 export const discountScope      = pgEnum('discount_scope', ['PRODUCT', 'SUBSCRIPTION']);
@@ -114,6 +123,7 @@ export const subscriptions = pgTable('subscriptions', {
   customerId:          integer('customer_id').notNull().references(() => customers.id),
   planId:              integer('plan_id').notNull().references(() => plans.id),
   templateId:          integer('template_id').references(() => quotationTemplates.id, { onDelete: 'set null' }),
+   source:              varchar('source', { length: 20 }).notNull().default('SELF_SERVICE'), 
   startDate:           date('start_date').notNull(),
   expiryDate:          date('expiry_date'),
   nextBillingDate:     date('next_billing_date'),
@@ -222,3 +232,21 @@ export const payments = pgTable('payments', {
   check('payments_amount_check', sql`${t.amount} > 0`),
   index('idx_payments_invoice').on(t.invoiceId),
 ]);
+
+// ─────────────────────── STAFF ASSIGNMENTS ───────────────────
+export const staffAssignments = pgTable('staff_assignments', {
+  id:         serial('id').primaryKey(),
+  staffId:    integer('staff_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  customerId: integer('customer_id').notNull().references(() => customers.id, { onDelete: 'cascade' }),
+}, (t) => [
+  unique('staff_customer_unique').on(t.staffId, t.customerId),
+]);
+
+// ─────────────────────────── AUDIT LOGS ──────────────────────
+export const auditLogs = pgTable('audit_logs', {
+  id:        serial('id').primaryKey(),
+  actorId:   integer('actor_id').references(() => users.id, { onDelete: 'set null' }),
+  action:    varchar('action', { length: 100 }).notNull(), // e.g., 'PAYMENT_RECORDED'
+  entityId:  integer('entity_id'), // e.g., invoice ID
+  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
+});
