@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
-  LayoutDashboard, FileText, Repeat, Receipt, CreditCard, CalendarClock,
-  Eye, LogOut, Menu, PanelLeftClose, PanelLeftOpen, UserCog, X, ChevronDown,
+  LayoutDashboard, FileText, Repeat, Receipt, CreditCard,
+  Package, Eye, LogOut, Menu, PanelLeftClose, PanelLeftOpen, UserRound, X, ChevronDown,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -23,32 +23,57 @@ const T = {
   danger: "text-red-600 hover:bg-red-50",
 };
 
-// Menu for this role. badge: { key, tone } reads counts[key]; readOnly shows the "view only" eye.
+// UPDATED: Customer-specific navigation
 const MENU = [
   {
     title: "Overview",
     items: [
-      { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-    ],
-  },
-  {
-    title: "Sales",
-    items: [
-      { label: "Quotations", to: "/quotations", icon: FileText },
-      { label: "Subscriptions", to: "/subscriptions", icon: Repeat },
-    ],
-  },
-  {
-    title: "Billing",
-    items: [
-      { label: "Invoices", to: "/invoices", icon: Receipt },
-      { label: "Payments", to: "/payments", icon: CreditCard },
+      {
+        label: "Dashboard",
+        to: "/dashboard",
+        icon: LayoutDashboard,
+      },
     ],
   },
   {
     title: "Catalog",
     items: [
-      { label: "Plans", to: "/plans", icon: CalendarClock },
+      {
+        label: "Products",
+        to: "/products",
+        icon: Package,
+        readOnly: true,
+      },
+    ],
+  },
+  {
+    title: "My Account",
+    items: [
+      {
+        label: "My Subscriptions",
+        to: "/subscriptions",
+        icon: Repeat,
+      },
+      {
+        label: "My Quotations",
+        to: "/quotations",
+        icon: FileText,
+      },
+    ],
+  },
+  {
+    title: "Billing",
+    items: [
+      {
+        label: "My Invoices",
+        to: "/invoices",
+        icon: Receipt,
+      },
+      {
+        label: "Payment History",
+        to: "/payments",
+        icon: CreditCard,
+      },
     ],
   },
 ];
@@ -146,12 +171,12 @@ const SidebarFooter = ({ onLogout }) => {
   return (
     <div className={`border-t p-3 ${T.divider}`}>
       <NavLink
-        to={`${BASE}/settings`}
+        to={`${BASE}/profile`}
         onClick={onNavigate}
-        title={collapsed ? "Profile & settings" : undefined}
+        title={collapsed ? "Profile" : undefined}
         className={({ isActive }) => `${footerBtn} ${align} ${isActive ? T.active : `${T.text} ${T.hover}`}`}
       >
-        <UserCog size={20} className="shrink-0" aria-hidden="true" />
+        <UserRound size={20} className="shrink-0" aria-hidden="true" />
         {!collapsed && <span>Profile</span>}
       </NavLink>
       <button type="button" onClick={onLogout} title={collapsed ? "Logout" : undefined} className={`${footerBtn} ${align} ${T.danger}`}>
@@ -176,7 +201,7 @@ const Sidebar = ({ collapsed = false, counts = {}, onLogout, onNavigate }) => {
       <div className={`flex h-full flex-col border-r transition-[width] duration-200 ${collapsed ? "w-[76px]" : "w-64"} ${T.root}`}>
         <div className={`flex h-16 shrink-0 items-center border-b px-4 ${T.divider} ${collapsed ? "justify-center" : ""}`}>
           {collapsed ? (
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#87A96B] text-base font-bold text-[#14200F]">T</div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#87A96B] text-base font-bold text-[#14200F]">B</div>
           ) : (
             <span className="font-semibold tracking-wide text-stone-800">BRIGHTLOOP</span>
           )}

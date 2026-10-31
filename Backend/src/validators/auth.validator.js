@@ -22,3 +22,11 @@ export const loginSchema = z.object({
   email:    z.string().trim().toLowerCase().email('Invalid email'),
   password: z.string().min(1, 'Password is required'),
 });
+
+// All fields optional — only provided fields are updated
+export const updateProfileSchema = z.object({
+  name:        z.string().trim().min(2, 'Name must be at least 2 characters').max(150).optional(),
+  phone:       z.string().trim().max(30).optional(),
+  companyName: z.string().trim().max(200).optional(),
+  address:     z.string().trim().max(2000).optional(),
+});

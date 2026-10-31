@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { NavLink, Outlet } from "react-router-dom";
 import {
   LayoutDashboard, Users, FileText, Repeat, Receipt, CreditCard, Package, CalendarClock, Copy, BadgePercent, Landmark, BarChart3, ScrollText, ShieldCheck,
-  Eye, LogOut, Menu, PanelLeftClose, PanelLeftOpen, UserCog, X, ChevronDown,
+  Eye, LogOut, Menu, PanelLeftClose, PanelLeftOpen, UserRound, X, ChevronDown,
 } from "lucide-react";
 
 const BASE = "/admin";
@@ -149,12 +149,12 @@ const SidebarFooter = ({ onLogout }) => {
   return (
     <div className={`space-y-1 border-t ${collapsed ? "p-3" : "p-4"} ${T.divider}`}>
       <NavLink
-        to={`${BASE}/settings`}
+        to={`${BASE}/profile`}
         onClick={onNavigate}
-        title={collapsed ? "Profile & settings" : undefined}
+        title={collapsed ? "Profile" : undefined}
         className={({ isActive }) => `${footerBtn} ${align} ${isActive ? T.active : `${T.text} ${T.hover}`}`}
       >
-        <UserCog size={18} className="shrink-0" />
+        <UserRound size={18} className="shrink-0" />
         {!collapsed && <span>Profile</span>}
       </NavLink>
       <button type="button" onClick={onLogout} title={collapsed ? "Logout" : undefined} className={`${footerBtn} ${align} ${T.danger}`}>

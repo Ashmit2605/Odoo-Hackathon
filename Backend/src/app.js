@@ -5,13 +5,26 @@ import helmet from 'helmet';
 import healthRouter from './routes/health.routes.js';
 import authRouter from './routes/auth.routes.js';
 import resourcesRouter from './routes/resources.routes.js';
+import productRouter from './routes/product.routes.js';
+import invoiceRouter from './routes/invoice.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 
 const app = express();
 
+const configuredClientOrigins = (process.env.CLIENT_URL ?? '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const developmentClientOrigins = process.env.NODE_ENV === 'production'
+  ? []
+  : ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const allowedClientOrigins = [
+  ...new Set([...configuredClientOrigins, ...developmentClientOrigins]),
+];
+
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CLIENT_URL?.split(',') ?? true,
+  origin: allowedClientOrigins.length > 0 ? allowedClientOrigins : true,
   credentials: true,
 }));
 app.use(express.json({ limit: '1mb' }));
@@ -23,7 +36,13 @@ app.use('/api/health', healthRouter);
 // Auth endpoints
 app.use('/api/auth', authRouter);
 
-// Resources (teammate's dashboard routes)
+// Products MVC
+app.use('/api/products', productRouter);
+
+// Invoices + Payments
+app.use('/api/invoices', invoiceRouter);
+
+// Generic resources are mounted after specific API routes.
 app.use('/api', resourcesRouter);
 
 // Postgres + JSON error handling (from teammate)

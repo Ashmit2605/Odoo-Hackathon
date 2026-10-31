@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { login } from "../../services/authService.js";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,14 +15,16 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((current) => ({ ...current, [e.target.name]: e.target.value }));
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     if (!form.email || !form.password) {
       setError("Please fill in all fields.");
@@ -33,11 +36,30 @@ export default function Login() {
       return;
     }
 
-    // TODO: Connect backend login API here.
-    // Do not authenticate based only on frontend validation.
-    setError(
-      "Login API is not connected yet. Please connect the backend."
-    );
+    setIsSubmitting(true);
+    setError("");
+    try {
+      const result = await login({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
+
+      const storage = rememberMe ? localStorage : sessionStorage;
+      const otherStorage = rememberMe ? sessionStorage : localStorage;
+      otherStorage.removeItem("token");
+      otherStorage.removeItem("user");
+      storage.setItem("token", result.token);
+      storage.setItem("user", JSON.stringify(result.user));
+      navigate(result.redirectTo, { replace: true });
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to sign in."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -147,9 +169,11 @@ export default function Login() {
 
             <button
               type="submit"
-              className="w-full bg-[#D5851F] text-white py-3.5 rounded-xl font-semibold flex justify-center items-center gap-2 hover:bg-[#BD741A] transition"
+              disabled={isSubmitting}
+              className="w-full bg-[#D5851F] text-white py-3.5 rounded-xl font-semibold flex justify-center items-center gap-2 hover:bg-[#BD741A] transition disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Sign In <ArrowRight size={19} />
+              {isSubmitting ? "Signing in..." : "Sign In"}
+              {!isSubmitting && <ArrowRight size={19} />}
             </button>
           </form>
 

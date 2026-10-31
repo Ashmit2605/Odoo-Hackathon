@@ -1,11 +1,13 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   User, Mail, Lock, Eye, EyeOff, ArrowRight
 } from "lucide-react";
+import { register } from "../../services/authService.js";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -16,14 +18,16 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((current) => ({ ...current, [e.target.name]: e.target.value }));
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     if (Object.values(form).some((value) => !value.trim())) {
       setError("Please fill in all fields.");
@@ -35,8 +39,8 @@ export default function Register() {
       return;
     }
 
-    if (form.password.length < 8) {
-      setError("Password must contain at least 8 characters.");
+    if (form.password.length < 9) {
+      setError("Password must contain at least 9 characters.");
       return;
     }
 
@@ -60,10 +64,27 @@ export default function Register() {
       return;
     }
 
-    // TODO: Connect backend registration API here.
-    setError(
-      "Registration API is not connected yet. Your account has not been created."
-    );
+    setIsSubmitting(true);
+    setError("");
+    try {
+      const result = await register({
+        name: form.fullName.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
+
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("user", JSON.stringify(result.user));
+      navigate(result.redirectTo, { replace: true });
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to create your account."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const inputClass =
@@ -153,7 +174,7 @@ export default function Register() {
                 </button>
               </div>
               <p className="text-xs text-gray-400 mt-2">
-                At least 8 characters, uppercase, lowercase, and a special character.
+                At least 9 characters, uppercase, lowercase, and a special character.
               </p>
             </div>
 
@@ -192,9 +213,11 @@ export default function Register() {
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="w-full bg-[#D5851F] text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#BD741A] transition"
             >
-              Create Account <ArrowRight size={19} />
+              {isSubmitting ? "Creating account..." : "Create Account"}
+              {!isSubmitting && <ArrowRight size={19} />}
             </button>
           </form>
 
