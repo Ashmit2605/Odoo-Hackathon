@@ -6,6 +6,7 @@ import healthRouter from './routes/health.routes.js';
 import authRouter from './routes/auth.routes.js';
 import resourcesRouter from './routes/resources.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+import staffRouter from './routes/staff.routes.js';
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use('/api/health', healthRouter);
 
 // Auth endpoints
 app.use('/api/auth', authRouter);
+app.use('/api/staff', staffRouter); // 👈 ADD THIS
 
 // Resources (teammate's dashboard routes)
 app.use('/api', resourcesRouter);

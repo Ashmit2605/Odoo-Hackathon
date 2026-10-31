@@ -2,6 +2,7 @@
 import { db } from '../db/index.js';
 import { customers, invoices, payments, users } from '../db/schema.js';
 import { eq, and, lt, sql } from 'drizzle-orm';
+import { customers, invoices, payments, subscriptions, quotationTemplates } from '../db/schema.js';
 
 // --- 1. DASHBOARD ---
 export const getDashboardSummary = async (req, res, next) => {
@@ -100,5 +101,55 @@ export const getOverdueInvoices = async (req, res, next) => {
       )
     );
     res.json(overdue);
+  } catch (err) { next(err); }
+};
+
+// --- 6. QUOTATIONS ---
+export const createQuotation = async (req, res, next) => {
+  try {
+    const { customerId, templateId, startDate } = req.body;
+    
+    // Create a subscription in 'QUOTATION' status
+    const [sub] = await db.insert(subscriptions).values({
+      subscriptionNumber: `QT-${Date.now()}`,
+      customerId,
+      planId: 1, // Defaulting to plan 1 for hackathon simplicity
+      templateId,
+      startDate: startDate || new Date().toISOString().split('T')[0],
+      status: 'QUOTATION'
+    }).returning();
+
+    res.status(201).json(sub);
+  } catch (err) { next(err); }
+};
+
+// --- 7. SUBSCRIPTIONS ---
+export const confirmSubscription = async (req, res, next) => {
+  try {
+    const [updated] = await db.update(subscriptions)
+      .set({ 
+        status: 'CONFIRMED',
+        nextBillingDate: new Date().toISOString().split('T')[0]
+      })
+      .where(and(
+        eq(subscriptions.id, req.params.id),
+        eq(subscriptions.status, 'QUOTATION')
+      )).returning();
+
+    if (!updated) return res.status(400).json({ error: "Subscription not found or not in QUOTATION status" });
+    res.json(updated);
+  } catch (err) { next(err); }
+};
+
+// --- 8. MY PROFILE ---
+export const updateProfile = async (req, res, next) => {
+  try {
+    const { name, email } = req.body;
+    const [updated] = await db.update(users)
+      .set({ name, email })
+      .where(eq(users.id, req.user.id))
+      .returning();
+      
+    res.json({ message: "Profile updated", user: { id: updated.id, name: updated.name, email: updated.email } });
   } catch (err) { next(err); }
 };

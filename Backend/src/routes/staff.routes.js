@@ -27,4 +27,13 @@ router.post('/payments', staffController.recordPayment);
 // 5. Overdue Invoices
 router.get('/overdue-invoices', staffController.getOverdueInvoices);
 
+// 6. Quotations
+router.post('/quotations', staffController.createQuotation);
+
+// 7. Subscriptions
+router.patch('/subscriptions/:id/confirm', staffController.confirmSubscription);
+
+// 8. My Profile
+router.put('/profile', staffController.updateProfile);
+
 export default router;
