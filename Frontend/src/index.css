@@ -1,18 +1,8 @@
 @import "tailwindcss";
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  width: 100%;
-  min-height: 100%;
-}
-
-body {
-  font-family: Arial, sans-serif;
+@theme {
+  --color-sage: #87A96B;
+  --color-walnut: #5A3E2B;
+  --color-amberglow: #D5851F;
+  --color-cream: #FAF7F0;
 }

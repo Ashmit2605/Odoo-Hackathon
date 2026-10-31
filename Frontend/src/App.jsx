@@ -1,22 +1,20 @@
-import './index.css'
-function App() {
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Home from "./pages/Home/Home.jsx";
+import Login from "./pages/auth/Login.jsx";
+import Register from "./pages/auth/Register.jsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
+
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-10 rounded-2xl shadow-xl text-center">
-        <h1 className="text-4xl font-bold text-green-600">
-          Tailwind CSS Working!
-        </h1>
-
-        <p className="text-gray-600 mt-4">
-          React + Vite + Tailwind CSS
-        </p>
-
-        <button className="mt-6 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
-          Get Started
-        </button>
-      </div>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App
