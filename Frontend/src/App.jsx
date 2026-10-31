@@ -1,4 +1,13 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Navigate} from "react-router-dom";
+import Home from "./pages/Home/Home.jsx";
+import Login from "./pages/auth/Login.jsx";
+import Register from "./pages/auth/Register.jsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
+
+export default function App() {
+
 import AdminDashboard from "./pages/AdminDash/Admindash.jsx";
 import StaffDashboard from "./pages/StaffDash/Staffdash.jsx";
 import CustomerDashboard from "./pages/CustomerDash/Customerdash.jsx";
@@ -27,6 +36,15 @@ import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
 
 function App() {
   return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+      </Routes>
+    </BrowserRouter>
+  );
     <BrowserRouter>
       <Routes>
         {/* Auth */}
@@ -91,5 +109,6 @@ function App() {
     </BrowserRouter>
   );
 }
+<<<<<<< HEAD
 
 export default App;
